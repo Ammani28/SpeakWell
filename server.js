@@ -17,6 +17,11 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
+// Health check endpoint (for Uptime monitoring)
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
 // Authentication Middleware
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
@@ -376,14 +381,27 @@ app.delete('/api/user/history', authenticateToken, async (req, res) => {
 
 // Catch-all route to serve the main HTML page
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const publicIndex = path.join(__dirname, 'public', 'index.html');
+  const rootIndex = path.join(__dirname, 'index.html');
+  const agentHtml = path.join(__dirname, 'agent.html');
+
+  const fs = require('fs');
+  if (fs.existsSync(publicIndex)) {
+    return res.sendFile(publicIndex);
+  } else if (fs.existsSync(rootIndex)) {
+    return res.sendFile(rootIndex);
+  } else if (fs.existsSync(agentHtml)) {
+    return res.sendFile(agentHtml);
+  } else {
+    return res.status(200).send('<h1>SpeakWell Server Running</h1>');
+  }
 });
 
+// -------------------------------------------------------------
+// SERVER LISTEN (Always bind cleanly to 0.0.0.0 for Render)
+// -------------------------------------------------------------
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 SpeakWell Server running on port ${PORT}`);
+});
 
-
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 SpeakWell Server running on port ${PORT}`);
-  });
-
-  module.exports = app;
+module.exports = app;
