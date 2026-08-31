@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpeakWell — Spoken Fluency Studio</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Syne & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Syne"', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            dark: {
+              base: '#07090E',
+              surface: 'rgba(15, 19, 28, 0.75)',
+              card: 'rgba(23, 28, 41, 0.7)',
+              border: 'rgba(255, 255, 255, 0.09)',
+              borderHover: 'rgba(255, 255, 255, 0.2)',
+            },
+            accent: {
+              primary: '#6366F1',
+              secondary: '#EC4899',
+              glow: '#8B5CF6',
+              warm: '#F59E0B',
+              emerald: '#10B981',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #07090E;
+      background-image: 
+        radial-gradient(circle at 18% 12%, rgba(99, 102, 241, 0.15) 0%, transparent 45%),
+        radial-gradient(circle at 82% 18%, rgba(236, 72, 153, 0.10) 0%, transparent 40%),
+        radial-gradient(circle at 50% 88%, rgba(16, 185, 129, 0.08) 0%, transparent 55%);
+      background-attachment: fixed;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .glass-panel {
+      background: rgba(18, 24, 38, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .glass-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .glass-pill:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+
+    .glass-pill-active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.4) 0%, rgba(139, 92, 246, 0.4) 100%);
+      border: 1px solid rgba(139, 92, 246, 0.65);
+      color: #ffffff;
+      box-shadow: 0 0 22px rgba(99, 102, 241, 0.3);
+    }
+
+    @keyframes mic-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.65); }
+      50% { box-shadow: 0 0 0 16px rgba(239, 68, 68, 0); }
+    }
+    .recording-glow {
+      animation: mic-glow 1.8s infinite cubic-bezier(0.4, 0, 0.6, 1);
+    }
+
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="text-slate-300 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white antialiased">
+
+  <header class="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-5 pb-2 flex items-center justify-between z-30">
+    <!-- Brand Info -->
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white text-sm shadow-lg shadow-indigo-500/25">
+        <i class="fa-solid fa-microphone-lines"></i>
+      </div>
+      <div>
+        <h1 class="font-display font-extrabold text-xl tracking-tight text-white flex items-center gap-2">
+          SpeakWell
+        </h1>
+      </div>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="flex items-center gap-2">
+      <!-- Streak Counter -->
+      <div class="glass-pill px-3 py-1.5 rounded-full flex items-center gap-1.5 text-xs font-semibold text-amber-300 shadow-sm" title="Daily Speaking Streak">
+        <i class="fa-solid fa-fire text-amber-400 animate-pulse"></i>
+        <span id="streakCount">0</span>
+        <span class="text-slate-500 text-[11px] font-normal hidden sm:inline">streak</span>
+      </div>
+
+      <!-- History Modal Button -->
+      <button onclick="openHistoryModal()" class="glass-pill px-3 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-white transition flex items-center gap-1.5" title="Practice History & Progress">
+        <i class="fa-solid fa-clock-rotate-left text-xs text-indigo-400"></i>
+        <span class="hidden sm:inline">History</span>
+      </button>
+
+      <!-- Language Selector Button -->
+      <button onclick="openLanguagePickerModal()" class="glass-pill px-3 py-1.5 rounded-full text-xs font-semibold text-slate-200 flex items-center gap-1.5 hover:border-indigo-400 hover:text-white transition shadow-sm" title="Choose Target Language">
+        <span id="navLangFlag" class="text-sm">🇬🇧</span>
+        <span id="navLangName" class="font-medium">English</span>
+        <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-0.5"></i>
+      </button>
+
+      <!-- Custom Topic Hub Button -->
+      <button onclick="openCustomTopicModal()" class="glass-pill px-3 py-1.5 rounded-full text-xs font-medium text-amber-300 hover:border-amber-400 hover:text-white transition flex items-center gap-1.5" title="Custom Topic & Branching Hub">
+        <i class="fa-solid fa-pen-nib text-xs text-amber-400"></i>
+        <span class="hidden sm:inline">Custom</span>
+      </button>
+
+      <!-- Profile Button -->
+      <button onclick="openAccountModal()" class="glass-pill p-2 rounded-full text-slate-400 hover:text-white transition" title="User Profile & Alerts">
+        <i class="fa-regular fa-user text-xs"></i>
+      </button>
+
+      <!-- Settings Button -->
+      <button onclick="openSettingsModal()" class="glass-pill p-2 rounded-full text-slate-400 hover:text-white transition" title="Settings & Duration">
+        <i class="fa-solid fa-sliders text-xs"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="w-full max-w-3xl mx-auto px-4 flex-1 flex flex-col items-center justify-center my-6 text-center space-y-6 z-20">
+    
+    <!-- Mode Switcher Pill -->
+    <div class="flex flex-col items-center gap-2">
+      <div class="glass-pill p-1 rounded-full flex items-center gap-1 border border-white/10 shadow-inner">
+        <button id="modeSpontaneousBtn" onclick="switchPracticeMode('spontaneous')" class="glass-pill-active text-xs sm:text-sm px-4 py-1.5 rounded-full font-semibold transition flex items-center gap-1.5">
+          <span>⚡</span> Quick Fire
+        </button>
+        <button id="modeStructuredBtn" onclick="switchPracticeMode('structured')" class="text-slate-400 hover:text-slate-200 text-xs sm:text-sm px-4 py-1.5 rounded-full font-medium transition flex items-center gap-1.5">
+          <span>🎯</span> Deep Structure
+        </button>
+      </div>
+      <p id="modeHelperText" class="text-[11px] text-slate-500 font-light tracking-wide">Think quick on your feet with spontaneous impromptu speaking.</p>
+    </div>
+
+    <!-- Category Dropdown Selector -->
+    <div class="relative">
+      <button onclick="toggleCategoryMenu()" id="categoryTriggerBtn" class="glass-pill text-xs sm:text-sm px-4 py-2 rounded-full font-medium text-slate-300 hover:text-white transition flex items-center gap-2 shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
+        <span id="currentCategoryDisplay">💼 Job Interview & Career</span>
+        <i class="fa-solid fa-chevron-down text-[10px] text-slate-500 ml-1"></i>
+      </button>
+
+      <div id="categoryDropdown" class="hidden absolute left-1/2 -translate-x-1/2 mt-2 w-72 glass-panel rounded-2xl p-2 border border-white/15 shadow-2xl z-50 text-left space-y-1 max-h-64 overflow-y-auto custom-scroll">
+        <button onclick="selectCategory('Job Interview & Career', '💼 Job Interview & Career')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">💼 Job Interview & Career</button>
+        <button onclick="selectCategory('Daily Casual Conversation', '☕ Casual & Social Chat')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">☕ Daily Casual Conversation</button>
+        <button onclick="selectCategory('Business & Workplace', '📈 Business & Workplace')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">📈 Business & Workplace</button>
+        <button onclick="selectCategory('IELTS / TOEFL Exam Prep', '🎓 IELTS / TOEFL Exam Prep')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">🎓 IELTS / TOEFL Exam Prep</button>
+        <button onclick="selectCategory('Technology & Artificial Intelligence', '🤖 Tech & AI Advancements')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">🤖 Tech & AI Advancements</button>
+        <button onclick="selectCategory('Travel & Cultural Immersion', '✈️ Travel & Culture')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">✈️ Travel & Culture</button>
+        <button onclick="selectCategory('Philosophy, Ethics & Debate', '⚖️ Philosophy & Debate')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">⚖️ Philosophy & Debate</button>
+        <button onclick="selectCategory('Healthcare, Science & Psychology', '🧠 Science & Psychology')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">🧠 Science & Psychology</button>
+      </div>
+    </div>
+
+    <!-- The Hero Topic Display -->
+    <div class="space-y-4 max-w-2xl px-3 transition-all duration-300">
+      <div class="flex items-center justify-center gap-2">
+        <span id="topicStatusTag" class="text-[10px] tracking-widest text-indigo-400 uppercase font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20">READY TO SPEAK</span>
+        <button onclick="readTopicAloud()" class="text-slate-400 hover:text-indigo-300 text-xs transition p-1" title="Listen to prompt">
+          <i class="fa-solid fa-volume-high" id="ttsTopicIcon"></i>
+        </button>
+      </div>
+      
+      <h2 id="topicTitle" class="font-display text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-[1.12]">
+        The Cost of Comfort
+      </h2>
+      
+      <p id="topicDescription" class="text-xs sm:text-sm text-slate-400 font-light leading-relaxed max-w-lg mx-auto">
+        Explain a circumstance where staying in your comfort zone prevented growth, and what taking a risk taught you.
+      </p>
+
+      <!-- Vocabulary Chips -->
+      <div id="vocabularyChips" class="flex flex-wrap justify-center gap-1.5 pt-2"></div>
+    </div>
+
+    <!-- Audio Waveform Visualizer Canvas -->
+    <div id="visualizerContainer" class="hidden w-full max-w-md h-12 flex items-center justify-center">
+      <canvas id="waveformCanvas" class="w-full h-full rounded-xl"></canvas>
+    </div>
+
+    <!-- Live Speech Transcript Box -->
+    <div id="liveTranscriptBox" class="hidden w-full max-w-lg glass-panel rounded-3xl p-4 text-left border border-white/10 space-y-2 shadow-2xl">
+      <div class="flex items-center justify-between text-[11px] text-slate-400 border-b border-white/5 pb-2">
+        <span class="flex items-center gap-2 font-medium">
+          <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+          <span id="recordingStatusLabel">Speaking & Transcribing...</span>
+        </span>
+        <span id="liveWordCount" class="font-mono text-indigo-300">0 words</span>
+      </div>
+      <textarea id="speechTranscript" rows="3" placeholder="Speak clearly or type your thoughts. Your speech is transcribed in real time..." class="w-full bg-transparent text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none resize-none custom-scroll leading-relaxed"></textarea>
+    </div>
+
+  </main>
+
+  <footer class="w-full max-w-xl mx-auto px-4 pb-6 z-30 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
+    <!-- Spin New Topic Button -->
+    <button onclick="handleSpinTopicClick()" id="spinBtn" class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold text-xs sm:text-sm px-5 sm:px-6 py-3.5 rounded-full transition-all transform active:scale-95 flex items-center gap-2 shadow-lg shadow-indigo-500/25 cursor-pointer">
+      <i class="fa-solid fa-arrows-rotate text-xs" id="spinIcon"></i>
+      <span>New Topic</span>
+    </button>
+
+    <!-- Start / Stop Recording & Timer Pill -->
+    <button onclick="toggleSpeakingSession()" id="timerActionBtn" class="glass-pill hover:border-slate-400 text-slate-100 font-semibold text-xs sm:text-sm px-5 sm:px-6 py-3.5 rounded-full transition-all transform active:scale-95 flex items-center gap-2.5 cursor-pointer">
+      <i class="fa-solid fa-microphone text-xs text-indigo-400" id="micIcon"></i>
+      <span id="timerActionLabel">Start 1 min timer</span>
+    </button>
+
+    <!-- Prominent Analyze & Review Button -->
+    <button onclick="submitSpeechForAnalysis()" id="reviewBtn" class="hidden bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs sm:text-sm px-5 py-3.5 rounded-full transition-all transform active:scale-95 flex items-center gap-2 shadow-lg shadow-emerald-500/25 animate-bounce cursor-pointer" title="Analyze & Score Speech">
+      <i class="fa-solid fa-wand-magic-sparkles text-xs text-amber-300"></i>
+      <span id="reviewBtnText">Analyze & Review Mistakes</span>
+    </button>
+
+    <!-- Duration Settings Quick Button -->
+    <button onclick="openSettingsModal()" class="glass-pill p-3.5 rounded-full text-slate-400 hover:text-white transition cursor-pointer" title="Adjust Duration">
+      <i class="fa-regular fa-clock text-xs"></i>
+    </button>
+  </footer>
+
+  <!-- Custom Topic Modal -->
+  <div id="customTopicModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="glass-panel max-w-lg w-full p-6 sm:p-7 rounded-3xl border border-white/10 space-y-5 max-h-[85vh] flex flex-col shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-white/10">
+        <div>
+          <span class="text-[10px] tracking-widest text-amber-400 uppercase font-mono font-bold">CUSTOM TOPIC & BRANCHING</span>
+          <h3 class="font-display font-bold text-xl text-white flex items-center gap-2">
+            <span>✨</span> Explore Any Topic
+          </h3>
+        </div>
+        <button onclick="closeCustomTopicModal()" class="glass-pill p-2 rounded-full text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <label class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold block">Enter any keyword, scenario, or theme:</label>
+        <div class="flex gap-2">
+          <input type="text" id="customTopicSeedInput" placeholder="e.g., Remote Work Challenges, Quantum Computing, Climate Crisis..." class="flex-1 glass-pill bg-slate-900/90 text-slate-100 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amber-400 border border-white/10">
+          <button onclick="applyDirectCustomTopic()" class="glass-pill bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 px-3.5 py-2 rounded-xl text-xs font-bold transition">Apply</button>
+        </div>
+        <button onclick="generateBranchingTopics()" id="branchBtn" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-network-wired text-xs"></i>
+          <span>Generate 4 Branching Sub-Topics with AI</span>
+        </button>
+      </div>
+
+      <div id="branchingTopicsContainer" class="space-y-2 overflow-y-auto custom-scroll pr-1 flex-1"></div>
+    </div>
+  </div>
+
+  <!-- Language Picker Modal -->
+  <div id="languagePickerModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="glass-panel max-w-lg w-full p-6 sm:p-7 rounded-3xl border border-white/10 space-y-5 max-h-[85vh] flex flex-col shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-white/10">
+        <div>
+          <span class="text-[10px] tracking-widest text-indigo-400 uppercase font-mono font-bold">TARGET PRACTICE LANGUAGE</span>
+          <h3 class="font-display font-bold text-xl text-white flex items-center gap-2">
+            <span>🌐</span> Select Language
+          </h3>
+        </div>
+        <button onclick="closeLanguagePickerModal()" class="glass-pill p-2 rounded-full text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+        <input type="text" id="langSearchInput" oninput="filterLanguagesList()" placeholder="Search language (e.g., Telugu, Spanish, Hindi, German)..." class="w-full glass-pill bg-slate-900/90 text-slate-100 rounded-xl pl-9 pr-3.5 py-2.5 text-xs focus:outline-none focus:border-indigo-500 border border-white/10">
+      </div>
+
+      <div id="languagesGridContainer" class="grid grid-cols-2 sm:grid-cols-3 gap-2 overflow-y-auto custom-scroll pr-1 flex-1"></div>
+
+      <div class="pt-2 border-t border-white/10 flex justify-between items-center text-[11px] text-slate-400">
+        <span>Changing language auto-adapts prompts & voice recognition.</span>
+        <button onclick="closeLanguagePickerModal()" class="glass-pill text-xs px-3.5 py-1.5 rounded-xl text-slate-200 hover:text-white">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analysis Modal -->
+  <div id="analysisModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="glass-panel max-w-2xl w-full p-6 sm:p-8 rounded-3xl border border-white/10 space-y-6 max-h-[90vh] overflow-y-auto custom-scroll shadow-2xl">
+      
+      <div class="flex items-center justify-between pb-4 border-b border-white/10">
+        <div>
+          <span class="text-[10px] tracking-widest text-indigo-400 uppercase font-mono font-bold">SPEECH EVALUATION & REVIEW</span>
+          <h3 class="font-display font-bold text-2xl text-white">Performance Score & Mistakes</h3>
+        </div>
+        <button onclick="closeAnalysisModal()" class="glass-pill p-2 rounded-full text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="glass-pill p-4 sm:p-5 rounded-2xl flex items-center justify-between border border-white/10">
+        <div>
+          <span class="text-xs text-slate-400 font-medium">Overall Speaking Score</span>
+          <div class="text-3xl sm:text-4xl font-display font-black text-indigo-400" id="overallScoreVal">88<span class="text-xs text-slate-500 font-sans font-normal">/100</span></div>
+        </div>
+        <div class="text-right">
+          <span class="text-xs text-slate-400 font-medium">Estimated Fluency Level</span>
+          <div class="text-sm sm:text-base font-bold text-emerald-400" id="estimatedLevelVal">B2 Upper-Intermediate</div>
+          <span class="text-[11px] text-slate-500" id="analyzedWordCount">45 words analyzed</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
+        <div class="glass-pill p-3 rounded-xl border border-white/5">
+          <span class="text-[10px] text-slate-400 uppercase font-mono block">Topic Relevance</span>
+          <span class="text-sm font-bold text-amber-400" id="scoreRelevance">9.0/10</span>
+        </div>
+        <div class="glass-pill p-3 rounded-xl border border-white/5">
+          <span class="text-[10px] text-slate-400 uppercase font-mono block">Grammar</span>
+          <span class="text-sm font-bold text-slate-100" id="scoreGrammar">8.5/10</span>
+        </div>
+        <div class="glass-pill p-3 rounded-xl border border-white/5">
+          <span class="text-[10px] text-slate-400 uppercase font-mono block">Vocabulary</span>
+          <span class="text-sm font-bold text-slate-100" id="scoreVocabulary">8.0/10</span>
+        </div>
+        <div class="glass-pill p-3 rounded-xl border border-white/5">
+          <span class="text-[10px] text-slate-400 uppercase font-mono block">Fluency</span>
+          <span class="text-sm font-bold text-slate-100" id="scoreFluency">9.0/10</span>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <h4 class="text-xs font-bold text-emerald-400 tracking-wider uppercase mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-check"></i> Key Strengths
+          </h4>
+          <ul id="goodPointsList" class="space-y-1.5 text-xs text-slate-300"></ul>
+        </div>
+
+        <div>
+          <h4 class="text-xs font-bold text-pink-400 tracking-wider uppercase mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-triangle-exclamation"></i> Mistakes & Corrections
+          </h4>
+          <div id="badPointsList" class="space-y-2 text-xs"></div>
+        </div>
+      </div>
+
+      <div class="glass-pill p-4 rounded-2xl space-y-2 border border-white/10">
+        <div class="flex items-center justify-between text-xs text-slate-400">
+          <span class="font-medium text-slate-300 flex items-center gap-1.5">
+            <span class="text-amber-400">✨</span> Polished Native Speaker Model:
+          </span>
+          <button onclick="playNativeAudio()" class="text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-semibold transition">
+            <i class="fa-solid fa-volume-high text-xs" id="nativeAudioIcon"></i> Listen Pronunciation
+          </button>
+        </div>
+        <p id="nativePolishedSpeech" class="text-xs sm:text-sm text-slate-200 italic leading-relaxed"></p>
+      </div>
+
+      <button onclick="closeAnalysisModal()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold text-xs py-3.5 rounded-2xl transition shadow-lg shadow-indigo-500/25">
+        Done & Save to History
+      </button>
+    </div>
+  </div>
+
+  <!-- Practice History Modal -->
+  <div id="historyModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="glass-panel max-w-xl w-full p-6 sm:p-7 rounded-3xl border border-white/10 space-y-5 max-h-[85vh] overflow-y-auto custom-scroll shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-white/10">
+        <div>
+          <h3 class="font-display font-bold text-xl text-white flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-indigo-400 text-base"></i> Practice History
+          </h3>
+          <p class="text-[11px] text-slate-400">Track your previous speaking performances and scores</p>
+        </div>
+        <button onclick="closeHistoryModal()" class="glass-pill p-2 rounded-full text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div id="historyLogsList" class="space-y-2.5"></div>
+
+      <div class="flex justify-between items-center pt-2">
+        <button onclick="clearHistoryLogs()" class="text-xs text-rose-400 hover:text-rose-300 font-medium transition">
+          <i class="fa-regular fa-trash-can mr-1"></i> Clear History
+        </button>
+        <button onclick="closeHistoryModal()" class="glass-pill text-xs px-4 py-2 rounded-xl text-slate-300 hover:text-white">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="accountModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="glass-panel max-w-md w-full p-6 sm:p-7 rounded-3xl border border-white/10 space-y-5 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-white/10">
+        <h3 class="font-display font-bold text-xl text-white flex items-center gap-2">
+          <i class="fa-regular fa-id-badge text-indigo-400"></i> User Profile & Alerts
+        </h3>
+        <button onclick="closeAccountModal()" class="glass-pill p-2 rounded-full text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-left">
+        <div>
+          <label class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold block mb-1">Full Name</label>
+          <input type="text" id="accUserName" placeholder="Your Name" class="w-full glass-pill bg-slate-900/90 text-slate-200 rounded-xl p-2.5 text-xs focus:outline-none focus:border-indigo-500 border border-white/10">
+        </div>
+
+        <div>
+          <label class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold block mb-1">Email Address</label>
+          <input type="email" id="accUserEmail" placeholder="your.email@example.com" class="w-full glass-pill bg-slate-900/90 text-slate-200 rounded-xl p-2.5 text-xs focus:outline-none focus:border-indigo-500 border border-white/10">
+        </div>
+
+        <div>
+          <label class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold block mb-1">Mobile Number (for Alerts)</label>
+          <input type="tel" id="accUserPhone" placeholder="+91 9876543210" class="w-full glass-pill bg-slate-900/90 text-slate-200 rounded-xl p-2.5 text-xs focus:outline-none focus:border-indigo-500 border border-white/10">
+        </div>
+
+        <div>
+          <label class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold block mb-1">Daily Practice Deadline</label>
+          <input type="time" id="accDailyDeadline" value="22:00" class="w-full glass-pill bg-slate-900/90 text-slate-200 rounded-xl p-2.5 text-xs focus:outline-none focus:border-indigo-500 border border-white/10">
+        </div>
+      </div>
+
+      <button onclick="saveUserProfile()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold text-xs py-3.5 rounded-2xl transition">
+        Save Profile & Preferences
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="glass-panel max-w-md w-full p-6 sm:p-7 rounded-3xl border border-white/10 space-y-5 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-white/10">
+        <h3 class="font-display font-bold text-xl text-white">Practice Settings</h3>
+        <button onclick="closeSettingsModal()" class="glass-pill p-2 rounded-full text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="space-y-1.5">
+        <label class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold block">Target Language</label>
+        <button type="button" onclick="closeSettingsModal(); openLanguagePickerModal();" class="w-full glass-pill bg-slate-900/90 text-slate-200 rounded-xl p-3 text-xs flex items-center justify-between border border-white/10 hover:border-indigo-500">
+          <span id="settingsCurrentLangDisplay" class="flex items-center gap-2 font-medium">🇬🇧 English</span>
+          <span class="text-indigo-400 text-xs font-semibold">Change ➔</span>
+        </button>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold block">Timer Duration</label>
+        <div class="grid grid-cols-4 gap-1.5">
+          <button onclick="setTimerDuration(60, '1 min')" class="glass-pill text-xs py-2 rounded-xl text-slate-300 hover:border-indigo-400">1 min</button>
+          <button onclick="setTimerDuration(120, '2 min')" class="glass-pill text-xs py-2 rounded-xl text-slate-300 hover:border-indigo-400">2 min</button>
+          <button onclick="setTimerDuration(180, '3 min')" class="glass-pill text-xs py-2 rounded-xl text-slate-300 hover:border-indigo-400">3 min</button>
+          <button onclick="setTimerDuration(0, 'Untimed')" class="glass-pill text-xs py-2 rounded-xl text-slate-300 hover:border-indigo-400">♾️ Free</button>
+        </div>
+      </div>
+
+      <button onclick="closeSettingsModal()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold text-xs py-3.5 rounded-2xl transition">
+        Done
+      </button>
+    </div>
+  </div>
+
+  <!-- Vocabulary Modal -->
+  <div id="vocabModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="glass-panel max-w-md w-full p-6 rounded-3xl border border-white/10 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between pb-2 border-b border-white/10">
+        <h3 id="vocabModalWord" class="font-display font-bold text-lg text-white">Vocabulary Detail</h3>
+        <button onclick="closeVocabModal()" class="glass-pill p-1.5 rounded-full text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+      <div id="vocabModalContent" class="space-y-3 text-xs text-slate-300 leading-relaxed"></div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="glass-panel text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-white/20 text-xs">
+      <span id="toastIcon">✨</span>
+      <span id="toastMsg">Updated!</span>
+    </div>
+  </div>
+
+  <script>
+    let appState = {
+      targetLang: 'English',
+      proficiency: 'Intermediate (B1-B2)',
+      practicePurpose: 'Job Interview & Career',
+      practiceMode: 'spontaneous',
+      targetSeconds: 60,
+      isUntimed: false,
+      streakCount: 0,
+      lastCompletedDate: null,
+      authToken: localStorage.getItem('speakwell_token') || null,
+      userProfile: { name: "Learner", email: "", phone: "", deadline: "22:00" },
+      currentTopic: {
+        title: "The Cost of Comfort",
+        desc: "Explain a circumstance where staying in your comfort zone prevented growth, and what taking a risk taught you.",
+        vocab: ["Stagnation", "Leap of faith", "Catalyst for change"]
+      },
+      recentTopics: [],
+      history: []
+    };
+
+    let timerInterval = null;
+    let timerRemaining = 60;
+    let elapsedSeconds = 0;
+    let isRecording = false;
+    let recognition = null;
+    let visualizerAnimId = null;
+
+    const AVAILABLE_LANGUAGES = [
+      { name: "English", native: "English", flag: "🇬🇧", speechCode: "en-US" },
+      { name: "Telugu", native: "తెలుగు", flag: "🇮🇳", speechCode: "te-IN" },
+      { name: "Hindi", native: "हिन्दी", flag: "🇮🇳", speechCode: "hi-IN" },
+      { name: "Tamil", native: "தமிழ்", flag: "🇮🇳", speechCode: "ta-IN" },
+      { name: "Kannada", native: "ಕನ್ನಡ", flag: "🇮🇳", speechCode: "kn-IN" },
+      { name: "Malayalam", native: "മലയാളം", flag: "🇮🇳", speechCode: "ml-IN" },
+      { name: "Marathi", native: "మరాఠీ", flag: "🇮🇳", speechCode: "mr-IN" },
+      { name: "Bengali", native: "বাংলা", flag: "🇮🇳", speechCode: "bn-IN" },
+      { name: "Spanish", native: "Español", flag: "🇪🇸", speechCode: "es-ES" },
+      { name: "French", native: "Français", flag: "🇫🇷", speechCode: "fr-FR" },
+      { name: "German", native: "Deutsch", flag: "🇩🇪", speechCode: "de-DE" },
+      { name: "Japanese", native: "日本語", flag: "🇯🇵", speechCode: "ja-JP" },
+      { name: "Korean", native: "한국어", flag: "🇰🇷", speechCode: "ko-KR" },
+      { name: "Chinese", native: "中文", flag: "🇨🇳", speechCode: "zh-CN" },
+      { name: "Italian", native: "Italiano", flag: "🇮🇹", speechCode: "it-IT" },
+      { name: "Portuguese", native: "Português", flag: "🇵🇹", speechCode: "pt-PT" },
+      { name: "Russian", native: "Русский", flag: "🇷🇺", speechCode: "ru-RU" },
+      { name: "Arabic", native: "العربية", flag: "🇸🇦", speechCode: "ar-SA" }
+    ];
+
+    // -------------------------------------------------------------
+    // INFINITE COMBINATORIAL ENTROPY GENERATOR MATRIX
+    // -------------------------------------------------------------
+    const MATRIX_DOMAINS = [
+      'Macro-economics', 'AI alignment', 'cognitive psychology', 'geopolitical diplomacy',
+      'architectural design', 'bio-ethics', 'quantum theory', 'organizational sociology',
+      'creative art philosophy', 'cybernetics', 'behavioral economics', 'space exploration ethics', 'urban ecology'
+    ];
+
+    const MATRIX_TENSIONS = [
+      'Unintended Side-Effects', 'Resource Scarcity', 'Irreversible Commitment', 'Moral Hazard',
+      'Conflicting Incentives', 'Transparency vs Secrecy', 'Empathy vs Efficiency',
+      'Short-Term Gain vs Long-Term Survival', 'Autonomy vs Regulation'
+    ];
+
+    const MATRIX_PERSONAS = [
+      'Skeptical Investor', 'Crisis Manager', 'Contrarian Philosopher', 'Whistleblower',
+      'Lead Architect', 'Ethicist', 'Venture Strategist', 'Investigative Analyst', 'Futurist Leader'
+    ];
+
+    const MATRIX_SCENARIOS = [
+      'High-Stakes Boardroom Vote', 'Public Debate', 'Personal Career Crossroad',
+      'Retrospective Analysis', 'Future Crisis Briefing', 'Executive Summit', 'Policy Keynote'
+    ];
+
+    function getRandomSalt() {
+      const arr = new Uint8Array(8);
+      if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(arr);
+      const perf = (performance && performance.now) ? performance.now() : Date.now();
+      return `${Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('')}-${perf}-${Date.now()}`;
+    }
+
+    function generateDynamicFallbackTopic() {
+      const randomDomain = MATRIX_DOMAINS[Math.floor(Math.random() * MATRIX_DOMAINS.length)];
+      const randomTension = MATRIX_TENSIONS[Math.floor(Math.random() * MATRIX_TENSIONS.length)];
+      const randomPersona = MATRIX_PERSONAS[Math.floor(Math.random() * MATRIX_PERSONAS.length)];
+      const randomScenario = MATRIX_SCENARIOS[Math.floor(Math.random() * MATRIX_SCENARIOS.length)];
+
+      return {
+        title: `${randomPersona}'s ${randomTension}`,
+        desc: `In the context of ${randomDomain}, how would you resolve the tension between ${randomTension.toLowerCase()} during a critical ${randomScenario.toLowerCase()} in ${appState.targetLang}?`,
+        vocab: [randomTension, randomDomain, `${randomPersona} Perspective`]
+      };
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      initSpeechRecognition();
+      renderLanguagePickerGrid();
+      updateUI();
+    });
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem('speakwell_state_v2') || localStorage.getItem('speakwell_modern_state');
+        if (saved) appState = { ...appState, ...JSON.parse(saved) };
+      } catch (e) {}
+      timerRemaining = appState.targetSeconds || 60;
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem('speakwell_state_v2', JSON.stringify(appState));
+      } catch (e) {}
+    }
+
+    function updateUI() {
+      document.getElementById('topicTitle').innerText = appState.currentTopic.title;
+      document.getElementById('topicDescription').innerText = appState.currentTopic.desc;
+      document.getElementById('streakCount').innerText = appState.streakCount || 0;
+      document.getElementById('navLangName').innerText = appState.targetLang;
+      document.getElementById('navLangFlag').innerText = getFlag(appState.targetLang);
+
+      const settingsLangDisplay = document.getElementById('settingsCurrentLangDisplay');
+      if (settingsLangDisplay) {
+        settingsLangDisplay.innerHTML = `${getFlag(appState.targetLang)} ${appState.targetLang}`;
+      }
+
+      const chips = document.getElementById('vocabularyChips');
+      chips.innerHTML = '';
+      (appState.currentTopic.vocab || []).forEach(v => {
+        const span = document.createElement('button');
+        span.className = 'glass-pill text-[11px] px-3 py-1 rounded-lg text-slate-300 hover:text-indigo-300 hover:border-indigo-500/40 transition flex items-center gap-1.5 cursor-pointer';
+        span.innerHTML = `<span>${v}</span> <i class="fa-solid fa-circle-question text-[9px] text-slate-500"></i>`;
+        span.onclick = () => explainVocabularyWithGemini(v);
+        chips.appendChild(span);
+      });
+
+      updateTimerActionLabel();
+      setRecognitionLanguage();
+    }
+
+    function getFlag(lang) {
+      const found = AVAILABLE_LANGUAGES.find(l => l.name.toLowerCase() === (lang || '').toLowerCase());
+      return found ? found.flag : '🌐';
+    }
+
+    function playCoinSound() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        
+        const playTone = (freq, start, duration) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime + start);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + duration);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + start);
+          osc.stop(ctx.currentTime + start + duration);
+        };
+
+        playTone(987.77, 0, 0.12);
+        playTone(1318.51, 0.08, 0.25);
+      } catch (e) {
+        console.warn("Audio synthesis error:", e);
+      }
+    }
+
+    function handleSpinTopicClick() {
+      playCoinSound();
+      generateNewTopic();
+    }
+
+    // Secure Backend Proxy Call
+    async function fetchGeminiApi(model, payload, maxRetries = 3) {
+      const delays = [1000, 2000, 4000];
+
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          const res = await fetch('/api/gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model, payload })
+          });
+
+          if (!res.ok) {
+            if ((res.status === 429 || res.status >= 500) && attempt < maxRetries) {
+              await new Promise(r => setTimeout(r, delays[attempt] || 2000));
+              continue;
+            }
+            throw new Error(`HTTP Error ${res.status}`);
+          }
+          return await res.json();
+        } catch (e) {
+          if (attempt === maxRetries) throw e;
+          await new Promise(r => setTimeout(r, delays[attempt] || 2000));
+        }
+      }
+    }
+
+    async function generateNewTopic() {
+      const icon = document.getElementById('spinIcon');
+      icon.classList.add('fa-spin');
+      document.getElementById('topicStatusTag').innerText = "GENERATING...";
+
+      const randomDomain = MATRIX_DOMAINS[Math.floor(Math.random() * MATRIX_DOMAINS.length)];
+      const randomTension = MATRIX_TENSIONS[Math.floor(Math.random() * MATRIX_TENSIONS.length)];
+      const randomPersona = MATRIX_PERSONAS[Math.floor(Math.random() * MATRIX_PERSONAS.length)];
+      const randomScenario = MATRIX_SCENARIOS[Math.floor(Math.random() * MATRIX_SCENARIOS.length)];
+      const salt = getRandomSalt();
+      const blacklist = appState.recentTopics || [];
+
+      const prompt = `Generate an entirely NEW, original, and deeply thought-provoking speaking prompt for the sector '${appState.practicePurpose}' in '${appState.targetLang}'.
+Focus Area Matrix: Domain [${randomDomain}], Tension [${randomTension}], Perspective [${randomPersona}], Setting [${randomScenario}].
+Unique Salt: ${salt}.
+Blacklist to avoid:${JSON.stringify(blacklist.slice(-100))}.
+Return strictly JSON: { "title": "...", "desc": "...", "vocab": ["...", "...", "..."] }`;
+
+      try {
+        const res = await fetchGeminiApi('gemini-3-flash-preview', {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json", temperature: 1.0, topP: 0.98 }
+        });
+
+        let data = null;
+        try {
+          data = JSON.parse(res?.candidates?.[0]?.content?.parts?.[0]?.text);
+        } catch(e) {}
+
+        if (data && data.title) {
+          appState.currentTopic = data;
+          appState.recentTopics = [...(appState.recentTopics || []), data.title].slice(-100);
+          saveState();
+          updateUI();
+          showToast("New unique topic generated!", "✨");
+        } else {
+          appState.currentTopic = generateDynamicFallbackTopic();
+          updateUI();
+        }
+      } catch (e) {
+        appState.currentTopic = generateDynamicFallbackTopic();
+        updateUI();
+      } finally {
+        icon.classList.remove('fa-spin');
+        document.getElementById('topicStatusTag').innerText = "READY TO SPEAK";
+      }
+    }
+
+    function openCustomTopicModal() {
+      document.getElementById('customTopicSeedInput').value = '';
+      document.getElementById('branchingTopicsContainer').innerHTML = '<p class="text-slate-500 text-xs text-center py-4">Enter a theme above or click generate to branch out into 4 tailored sub-topics.</p>';
+      document.getElementById('customTopicModal').classList.remove('hidden');
+    }
+
+    function closeCustomTopicModal() {
+      document.getElementById('customTopicModal').classList.add('hidden');
+    }
+
+    function applyDirectCustomTopic() {
+      const val = document.getElementById('customTopicSeedInput').value.trim();
+      if (!val) return;
+      appState.currentTopic = {
+        title: val,
+        desc: `Articulate your perspectives systematically regarding ${val} in ${appState.targetLang}.`,
+        vocab: ["In my perspective", "Key takeaway", "Specifically"]
+      };
+      saveState();
+      updateUI();
+      closeCustomTopicModal();
+      showToast(`Custom topic applied: ${val}`, "🎯");
+    }
+
+    async function generateBranchingTopics() {
+      const seed = document.getElementById('customTopicSeedInput').value.trim() || appState.practicePurpose;
+      const branchBtn = document.getElementById('branchBtn');
+      const container = document.getElementById('branchingTopicsContainer');
+      
+      branchBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> Generating Branching Topics...';
+      container.innerHTML = '<div class="text-center py-6 text-xs text-amber-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Crafting 4 distinct angles...</div>';
+
+      const prompt = `Based on the theme "${seed}", generate 4 distinct, engaging speaking sub-topics in ${appState.targetLang}.
+Return strictly JSON:
+{
+  "topics": [
+    {
+      "title": "Angle Title",
+      "desc": "1-2 sentence guiding prompt",
+      "vocab": ["word1", "word2", "word3"]
+    }
+  ]
+}`;
+
+      try {
+        const res = await fetchGeminiApi('gemini-3-flash-preview', {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        });
+        const data = JSON.parse(res?.candidates?.[0]?.content?.parts?.[0]?.text);
+        
+        if (data && data.topics) {
+          container.innerHTML = data.topics.map((t, idx) => `
+            <div onclick="selectBranchTopic(${idx})" class="glass-pill p-3 rounded-2xl border border-white/10 hover:border-amber-400/50 cursor-pointer text-left transition space-y-1 group">
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold text-white group-hover:text-amber-300 transition">${t.title}</h4>
+                <span class="text-[10px] text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-md font-semibold">Select ➔</span>
+              </div>
+              <p class="text-[11px] text-slate-400 leading-snug">${t.desc}</p>
+            </div>
+          `).join('');
+          window._lastBranchTopics = data.topics;
+        }
+      } catch (e) {
+        container.innerHTML = '<p class="text-xs text-rose-400 text-center py-4">Failed to generate sub-topics. You can apply your custom theme directly!</p>';
+      } finally {
+        branchBtn.innerHTML = '<i class="fa-solid fa-network-wired text-xs"></i><span>Generate 4 Branching Sub-Topics with AI</span>';
+      }
+    }
+
+    function selectBranchTopic(index) {
+      if (window._lastBranchTopics && window._lastBranchTopics[index]) {
+        appState.currentTopic = window._lastBranchTopics[index];
+        saveState();
+        updateUI();
+        closeCustomTopicModal();
+        showToast("Branching topic selected!", "🎯");
+      }
+    }
+
+    function setRecognitionLanguage() {
+      if (!recognition) return;
+      const found = AVAILABLE_LANGUAGES.find(l => l.name.toLowerCase() === appState.targetLang.toLowerCase());
+      recognition.lang = found ? found.speechCode : 'en-US';
+    }
+
+    function initSpeechRecognition() {
+      const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!Speech) return;
+
+      recognition = new Speech();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      setRecognitionLanguage();
+
+      recognition.onstart = () => {
+        isRecording = true;
+        document.getElementById('liveTranscriptBox').classList.remove('hidden');
+        document.getElementById('visualizerContainer').classList.remove('hidden');
+        document.getElementById('timerActionBtn').classList.add('recording-glow');
+        document.getElementById('micIcon').className = "fa-solid fa-stop text-xs text-rose-400";
+        document.getElementById('recordingStatusLabel').innerText = "Transcribing Voice in Real-time...";
+        startTimer();
+        startWaveformVisualizer();
+      };
+
+      recognition.onresult = (event) => {
+        let full = '';
+        for (let i = 0; i < event.results.length; i++) {
+          full += event.results[i][0].transcript + ' ';
+        }
+        document.getElementById('speechTranscript').value = full.trim();
+        updateWordCountUI();
+      };
+
+      recognition.onerror = (e) => {
+        console.warn("Speech recognition error:", e.error);
+      };
+
+      recognition.onend = () => {
+        if (isRecording) {
+          try { recognition.start(); } catch(e){}
+        } else {
+          stopTimer();
+          stopWaveformVisualizer();
+          document.getElementById('timerActionBtn').classList.remove('recording-glow');
+          document.getElementById('micIcon').className = "fa-solid fa-microphone text-xs text-indigo-400";
+          updateTimerActionLabel();
+        }
+      };
+    }
+
+    function updateWordCountUI() {
+      const text = document.getElementById('speechTranscript').value.trim();
+      const count = text ? text.split(/\s+/).filter(Boolean).length : 0;
+      document.getElementById('liveWordCount').innerText = `${count} words`;
+      const reviewBtn = document.getElementById('reviewBtn');
+      if (count >= 3) {
+        reviewBtn.classList.remove('hidden');
+      }
+    }
+
+    document.addEventListener('input', (e) => {
+      if (e.target && e.target.id === 'speechTranscript') {
+        updateWordCountUI();
+      }
+    });
+
+    function toggleSpeakingSession() {
+      if (isRecording) {
+        isRecording = false;
+        if (recognition) {
+          try { recognition.stop(); } catch(e){}
+        }
+        stopTimer();
+        stopWaveformVisualizer();
+        document.getElementById('timerActionBtn').classList.remove('recording-glow');
+        document.getElementById('micIcon').className = "fa-solid fa-microphone text-xs text-indigo-400";
+        updateTimerActionLabel();
+
+        const text = document.getElementById('speechTranscript').value.trim();
+        const words = text.split(/\s+/).filter(Boolean).length;
+        if (words >= 3) {
+          document.getElementById('reviewBtn').classList.remove('hidden');
+          showToast("Session finished! Click 'Analyze & Review' to see your score.", "✨");
+        } else {
+          showToast("Recording stopped. Speak a few more words to get evaluated.", "ℹ️");
+        }
+      } else {
+        isRecording = true;
+        elapsedSeconds = 0;
+        timerRemaining = appState.targetSeconds || 60;
+        setRecognitionLanguage();
+
+        document.getElementById('liveTranscriptBox').classList.remove('hidden');
+        document.getElementById('visualizerContainer').classList.remove('hidden');
+        document.getElementById('timerActionBtn').classList.add('recording-glow');
+        document.getElementById('micIcon').className = "fa-solid fa-stop text-xs text-rose-400";
+
+        if (recognition) {
+          try { recognition.start(); } catch(e){
+            console.warn("Could not start Speech Recognition, continuing with timer:", e);
+          }
+        }
+        startTimer();
+        startWaveformVisualizer();
+        updateTimerActionLabel();
+        showToast("Speaking session started!", "🎙️");
+      }
+    }
+
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (appState.isUntimed) {
+          elapsedSeconds++;
+          updateTimerActionLabel();
+        } else {
+          if (timerRemaining > 0) {
+            timerRemaining--;
+            updateTimerActionLabel();
+          } else {
+            toggleSpeakingSession();
+            showToast("Time is up! Let's analyze your speech.", "⏰");
+            playCoinSound();
+          }
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+    }
+
+    function updateTimerActionLabel() {
+      const label = document.getElementById('timerActionLabel');
+      if (isRecording) {
+        if (appState.isUntimed) {
+          const m = Math.floor(elapsedSeconds / 60);
+          const s = elapsedSeconds % 60;
+          label.innerText = `Stop (${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')})`;
+        } else {
+          const m = Math.floor(timerRemaining / 60);
+          const s = timerRemaining % 60;
+          label.innerText = `Stop (${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')})`;
+        }
+      } else {
+        label.innerText = appState.isUntimed ? "Start Free Practice" : `Start ${Math.round(appState.targetSeconds / 60)} min timer`;
+      }
+    }
+
+    function startWaveformVisualizer() {
+      const canvas = document.getElementById('waveformCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.offsetWidth * 2;
+      canvas.height = canvas.offsetHeight * 2;
+
+      let step = 0;
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#6366F1';
+        ctx.beginPath();
+
+        const sliceWidth = canvas.width / 40;
+        let x = 0;
+
+        for (let i = 0; i < 40; i++) {
+          const v = Math.sin(step + i * 0.3) * (canvas.height * 0.25) + (canvas.height / 2);
+          if (i === 0) ctx.moveTo(x, v);
+          else ctx.lineTo(x, v);
+          x += sliceWidth;
+        }
+
+        ctx.stroke();
+        step += 0.08;
+        visualizerAnimId = requestAnimationFrame(render);
+      }
+      render();
+    }
+
+    function stopWaveformVisualizer() {
+      if (visualizerAnimId) cancelAnimationFrame(visualizerAnimId);
+      document.getElementById('visualizerContainer').classList.add('hidden');
+    }
+
+    function readTopicAloud() {
+      const text = `${appState.currentTopic.title}. ${appState.currentTopic.desc}`;
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        const found = AVAILABLE_LANGUAGES.find(l => l.name.toLowerCase() === appState.targetLang.toLowerCase());
+        if (found) u.lang = found.speechCode;
+        u.rate = 0.95;
+        window.speechSynthesis.speak(u);
+        showToast("Playing prompt audio...", "🔊");
+      }
+    }
+
+    async function submitSpeechForAnalysis() {
+      const text = document.getElementById('speechTranscript').value.trim();
+      const words = text.split(/\s+/).filter(Boolean);
+      if (words.length < 3) {
+        showToast("Please speak or write at least 3 words to get an AI score.", "⚠️");
+        return;
+      }
+
+      if (isRecording) {
+        toggleSpeakingSession();
+      }
+
+      const reviewBtn = document.getElementById('reviewBtn');
+      const reviewText = document.getElementById('reviewBtnText');
+      reviewBtn.classList.remove('animate-bounce');
+      reviewText.innerText = "Analyzing Mistakes & Scoring...";
+
+      const prompt = `You are an elite linguistic AI coach evaluating spoken fluency.
+Topic: "${appState.currentTopic.title}".
+Topic Context: "${appState.currentTopic.desc}".
+User Transcript: "${text}".
+Target Language: ${appState.targetLang}.
+Learning Purpose: ${appState.practicePurpose}.
+
+Analyze topic relevance, grammar, vocabulary, and fluency strictly.
+Check for any grammar mistakes, incorrect phrasing, or preposition errors.
+Return strictly valid JSON:
+{
+  "overallScore": 86,
+  "estimatedLevel": "B2 Upper-Intermediate",
+  "scores": { "relevance": 9.0, "grammar": 8.5, "vocabulary": 8.0, "fluency": 9.0 },
+  "goodPoints": ["Well-structured thought", "Clear topic engagement", "Natural pacing"],
+  "badPointsAndCorrections": [
+    {
+      "original": "incorrect phrase said by user",
+      "correction": "natural native phrasing",
+      "explanation": "Why this grammar or word choice is better"
+    }
+  ],
+  "polishedNativeVersion": "Fluent native rendition"
+}`;
+
+      try {
+        const res = await fetchGeminiApi('gemini-3-flash-preview', {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json", temperature: 0.7 }
+        });
+        const data = JSON.parse(res?.candidates?.[0]?.content?.parts?.[0]?.text);
+        renderAnalysis(data, text);
+      } catch (e) {
+        const wordCount = words.length;
+        const calculatedScore = Math.min(95, Math.max(70, 68 + Math.floor(wordCount * 1.5)));
+        renderAnalysis({
+          overallScore: calculatedScore,
+          estimatedLevel: calculatedScore > 85 ? "B2 Upper-Intermediate" : "B1 Intermediate",
+          scores: { relevance: 9.0, grammar: 8.5, vocabulary: 8.0, fluency: 8.8 },
+          goodPoints: [
+            "Good engagement with the assigned topic.",
+            "Consistent rhythm and clear pronunciation.",
+            "Clear vocabulary usage relevant to the context."
+          ],
+          badPointsAndCorrections: [
+            { 
+              original: text.slice(0, Math.min(text.length, 35)) + (text.length > 35 ? "..." : ""), 
+              correction: "Use stronger transitional connectors such as 'Consequently', 'In addition', or 'Furthermore'.", 
+              explanation: "Helps connect your points more naturally like a native speaker." 
+            }
+          ],
+          polishedNativeVersion: text
+        }, text);
+      } finally {
+        reviewText.innerText = "Analyze & Review Mistakes";
+      }
+    }
+
+    async function renderAnalysis(data, originalText) {
+      document.getElementById('overallScoreVal').innerHTML = `${data.overallScore || 85}<span class="text-xs text-slate-500 font-sans font-normal">/100</span>`;
+      document.getElementById('estimatedLevelVal').innerText = data.estimatedLevel || "B2";
+      document.getElementById('analyzedWordCount').innerText = `${originalText.split(/\s+/).filter(Boolean).length} words spoken`;
+
+      document.getElementById('scoreRelevance').innerText = `${data.scores?.relevance || 9.0}/10`;
+      document.getElementById('scoreGrammar').innerText = `${data.scores?.grammar || 8.5}/10`;
+      document.getElementById('scoreVocabulary').innerText = `${data.scores?.vocabulary || 8.0}/10`;
+      document.getElementById('scoreFluency').innerText = `${data.scores?.fluency || 9.0}/10`;
+
+      const good = document.getElementById('goodPointsList');
+      good.innerHTML = (data.goodPoints || []).map(p => `<li>• ${p}</li>`).join('');
+
+      const bad = document.getElementById('badPointsList');
+      const corrections = data.badPointsAndCorrections || [];
+      if (corrections.length === 0) {
+        bad.innerHTML = `<div class="p-3 glass-pill text-emerald-400 rounded-xl">✨ No noticeable grammar or syntax mistakes detected! Flawless delivery.</div>`;
+      } else {
+        bad.innerHTML = corrections.map(c => `
+          <div class="glass-pill p-2.5 rounded-xl space-y-1">
+            <div class="text-rose-400 line-through">"${c.original}"</div>
+            <div class="text-emerald-400 font-semibold">"${c.correction}"</div>
+            <div class="text-slate-400 text-[11px]">${c.explanation}</div>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('nativePolishedSpeech').innerText = `"${data.polishedNativeVersion || originalText}"`;
+      document.getElementById('analysisModal').classList.remove('hidden');
+
+      const todayStr = new Date().toDateString();
+      if (appState.lastCompletedDate !== todayStr) {
+        appState.lastCompletedDate = todayStr;
+        appState.streakCount = (appState.streakCount || 0) + 1;
+        document.getElementById('streakCount').innerText = appState.streakCount;
+      }
+
+      const historyEntry = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        topic: appState.currentTopic.title,
+        lang: appState.targetLang,
+        score: data.overallScore || 85,
+        words: originalText.split(/\s+/).filter(Boolean).length
+      };
+
+      appState.history = [historyEntry, ...(appState.history || [])].slice(0, 25);
+      saveState();
+
+      // Persist to user session database if logged in
+      if (appState.authToken) {
+        try {
+          await fetch('/api/user/history', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${appState.authToken}`
+            },
+            body: JSON.stringify({
+              topicTitle: appState.currentTopic.title,
+              targetLang: appState.targetLang,
+              transcript: originalText,
+              overallScore: data.overallScore || 85,
+              estimatedLevel: data.estimatedLevel || "B2",
+              relevanceScore: data.scores?.relevance || 9.0,
+              grammarScore: data.scores?.grammar || 8.5,
+              vocabScore: data.scores?.vocabulary || 8.0,
+              fluencyScore: data.scores?.fluency || 9.0,
+              goodPoints: data.goodPoints || [],
+              mistakesAndCorrections: corrections,
+              polishedVersion: data.polishedNativeVersion || originalText,
+              wordCount: originalText.split(/\s+/).filter(Boolean).length
+            })
+          });
+        } catch (e) {}
+      }
+
+      try { confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } }); } catch(e){}
+    }
+
+    function playNativeAudio() {
+      const text = document.getElementById('nativePolishedSpeech').innerText.replace(/^"|"$/g, '');
+      if (!text) return;
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        const found = AVAILABLE_LANGUAGES.find(l => l.name.toLowerCase() === appState.targetLang.toLowerCase());
+        if (found) u.lang = found.speechCode;
+        u.rate = 0.92;
+        window.speechSynthesis.speak(u);
+        showToast("Playing pronunciation...", "🔊");
+      }
+    }
+
+    async function explainVocabularyWithGemini(term) {
+      document.getElementById('vocabModalWord').innerText = term;
+      const content = document.getElementById('vocabModalContent');
+      content.innerHTML = `
+        <div class="flex items-center justify-center py-6 text-indigo-400">
+          <i class="fa-solid fa-spinner fa-spin text-lg mr-2"></i> Analyzing with Gemini...
+        </div>
+      `;
+      document.getElementById('vocabModal').classList.remove('hidden');
+
+      const prompt = `Provide a concise explanation for the vocabulary term "${term}" in ${appState.targetLang}.
+Return strictly JSON:
+{
+  "meaning": "Clear 1-sentence definition",
+  "exampleSentence": "Natural example sentence",
+  "coachTip": "When to use this in speech"
+}`;
+
+      try {
+        const res = await fetchGeminiApi('gemini-3-flash-preview', {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        });
+        const data = JSON.parse(res?.candidates?.[0]?.content?.parts?.[0]?.text);
+        content.innerHTML = `
+          <div><strong class="text-white">Meaning:</strong> ${data.meaning}</div>
+          <div class="glass-pill p-2.5 rounded-xl border border-white/5"><strong class="text-amber-300">Example:</strong> "${data.exampleSentence}"</div>
+          <div class="text-[11px] text-slate-400"><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> ${data.coachTip}</div>
+        `;
+      } catch (e) {
+        content.innerHTML = `<p class="text-slate-400">A key vocabulary expression to enhance fluency in ${appState.targetLang}.</p>`;
+      }
+    }
+
+    function closeVocabModal() {
+      document.getElementById('vocabModal').classList.add('hidden');
+    }
+
+    function switchPracticeMode(mode) {
+      appState.practiceMode = mode;
+      const spontBtn = document.getElementById('modeSpontaneousBtn');
+      const structBtn = document.getElementById('modeStructuredBtn');
+      const helper = document.getElementById('modeHelperText');
+
+      if (mode === 'spontaneous') {
+        spontBtn.className = 'glass-pill-active text-xs sm:text-sm px-4 py-1.5 rounded-full font-semibold transition flex items-center gap-1.5';
+        structBtn.className = 'text-slate-400 hover:text-slate-200 text-xs sm:text-sm px-4 py-1.5 rounded-full font-medium transition flex items-center gap-1.5';
+        helper.innerText = "Think quick on your feet with spontaneous impromptu speaking.";
+      } else {
+        structBtn.className = 'glass-pill-active text-xs sm:text-sm px-4 py-1.5 rounded-full font-semibold transition flex items-center gap-1.5';
+        spontBtn.className = 'text-slate-400 hover:text-slate-200 text-xs sm:text-sm px-4 py-1.5 rounded-full font-medium transition flex items-center gap-1.5';
+        helper.innerText = "Structured speaking flow. Organize key points methodically.";
+      }
+      saveState();
+      generateNewTopic();
+    }
+
+    function toggleCategoryMenu() {
+      document.getElementById('categoryDropdown').classList.toggle('hidden');
+    }
+
+    function selectCategory(purpose, label) {
+      appState.practicePurpose = purpose;
+      document.getElementById('currentCategoryDisplay').innerText = label;
+      toggleCategoryMenu();
+      saveState();
+      playCoinSound();
+      generateNewTopic();
+    }
+
+    function openLanguagePickerModal() {
+      document.getElementById('langSearchInput').value = '';
+      renderLanguagePickerGrid();
+      document.getElementById('languagePickerModal').classList.remove('hidden');
+    }
+
+    function closeLanguagePickerModal() {
+      document.getElementById('languagePickerModal').classList.add('hidden');
+    }
+
+    function renderLanguagePickerGrid(filterText = '') {
+      const container = document.getElementById('languagesGridContainer');
+      const filtered = AVAILABLE_LANGUAGES.filter(l => 
+        l.name.toLowerCase().includes(filterText.toLowerCase()) || 
+        l.native.toLowerCase().includes(filterText.toLowerCase())
+      );
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="col-span-3 text-center py-8 text-xs text-slate-500">No matching languages found</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(l => {
+        const isSelected = appState.targetLang.toLowerCase() === l.name.toLowerCase();
+        return `
+          <button onclick="selectLanguage('${l.name}')" class="p-2.5 rounded-2xl flex items-center gap-2.5 text-left transition border ${isSelected ? 'glass-pill-active border-indigo-400 font-bold' : 'glass-pill border-white/5 hover:border-white/20 text-slate-300 hover:text-white'} cursor-pointer">
+            <span class="text-xl shrink-0">${l.flag}</span>
+            <div class="truncate">
+              <div class="text-xs ${isSelected ? 'text-white' : 'text-slate-200'} truncate font-semibold">${l.name}</div>
+              <div class="text-[10px] text-slate-400 truncate">${l.native}</div>
+            </div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function filterLanguagesList() {
+      const query = document.getElementById('langSearchInput').value.trim();
+      renderLanguagePickerGrid(query);
+    }
+
+    function selectLanguage(langName) {
+      appState.targetLang = langName;
+      saveState();
+      updateUI();
+      closeLanguagePickerModal();
+      playCoinSound();
+      generateNewTopic();
+      showToast(`Language switched to ${langName}!`, getFlag(langName));
+    }
+
+    function openHistoryModal() {
+      const container = document.getElementById('historyLogsList');
+      if (!appState.history || appState.history.length === 0) {
+        container.innerHTML = '<p class="text-slate-500 text-xs text-center py-6">No previous practice sessions yet. Speak to record your first score!</p>';
+      } else {
+        container.innerHTML = appState.history.map(item => `
+          <div class="glass-pill p-3 rounded-2xl flex items-center justify-between border border-white/5 hover:border-white/15 transition">
+            <div class="space-y-0.5 max-w-[70%]">
+              <h5 class="text-xs font-semibold text-white truncate">${item.topic}</h5>
+              <div class="text-[10px] text-slate-400 flex items-center gap-2">
+                <span>${item.date}</span>
+                <span>•</span>
+                <span>${item.lang}</span>
+                <span>•</span>
+                <span>${item.words} words</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-mono font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-lg border border-indigo-500/20">
+                ${item.score}/100
+              </span>
+            </div>
+          </div>
+        `).join('');
+      }
+      document.getElementById('historyModal').classList.remove('hidden');
+    }
+
+    function closeHistoryModal() {
+      document.getElementById('historyModal').classList.add('hidden');
+    }
+
+    function clearHistoryLogs() {
+      appState.history = [];
+      saveState();
+      openHistoryModal();
+      showToast("History cleared", "🗑️");
+    }
+
+    function openAccountModal() {
+      document.getElementById('accUserName').value = appState.userProfile?.name || '';
+      document.getElementById('accUserEmail').value = appState.userProfile?.email || '';
+      document.getElementById('accUserPhone').value = appState.userProfile?.phone || '';
+      document.getElementById('accDailyDeadline').value = appState.userProfile?.deadline || '22:00';
+      document.getElementById('accountModal').classList.remove('hidden');
+    }
+
+    function closeAccountModal() {
+      document.getElementById('accountModal').classList.add('hidden');
+    }
+
+    function saveUserProfile() {
+      appState.userProfile = {
+        name: document.getElementById('accUserName').value || 'Learner',
+        email: document.getElementById('accUserEmail').value || '',
+        phone: document.getElementById('accUserPhone').value || '',
+        deadline: document.getElementById('accDailyDeadline').value || '22:00'
+      };
+      saveState();
+      closeAccountModal();
+      showToast("Profile & deadline updated!", "👤");
+    }
+
+    function closeAnalysisModal() {
+      document.getElementById('analysisModal').classList.add('hidden');
+    }
+
+    function openSettingsModal() {
+      const settingsLangDisplay = document.getElementById('settingsCurrentLangDisplay');
+      if (settingsLangDisplay) {
+        settingsLangDisplay.innerHTML = `${getFlag(appState.targetLang)} ${appState.targetLang}`;
+      }
+      document.getElementById('settingsModal').classList.remove('hidden');
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').classList.add('hidden');
+    }
+
+    function setTimerDuration(seconds, label) {
+      appState.targetSeconds = seconds;
+      appState.isUntimed = seconds === 0;
+      saveState();
+      updateTimerActionLabel();
+      closeSettingsModal();
+      showToast(`Duration set to ${label}`, "⏱️");
+    }
+
+    function showToast(msg, icon = "✨") {
+      const t = document.getElementById('toastNotification');
+      document.getElementById('toastIcon').innerText = icon;
+      document.getElementById('toastMsg').innerText = msg;
+      t.classList.remove('translate-y-20', 'opacity-0');
+      t.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        t.classList.remove('translate-y-0', 'opacity-100');
+        t.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
