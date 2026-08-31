@@ -382,9 +382,8 @@ app.get('*', (req, res) => {
 
 
 if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`🚀 SpeakWell Server running on http://localhost:${PORT}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 SpeakWell Server running on port ${PORT}`);
   });
-}
 
-module.exports = app;
+  module.exports = app;
