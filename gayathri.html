@@ -181,17 +181,18 @@
       <div id="categoryDropdown" class="hidden absolute left-1/2 -translate-x-1/2 mt-2 w-72 glass-panel rounded-2xl p-2 border border-white/15 shadow-2xl z-50 text-left space-y-1 max-h-64 overflow-y-auto custom-scroll">
         <button onclick="selectCategory('Job Interview & Career', '💼 Job Interview & Career')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">💼 Job Interview & Career</button>
         <button onclick="selectCategory('Daily Casual Conversation', '☕ Casual & Social Chat')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">☕ Daily Casual Conversation</button>
+        <button onclick="selectCategory('Travel & Cultural Immersion', '✈️ Travel & Culture')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">✈️ Travel & Culture</button>
+        <button onclick="selectCategory('Debate & Opinions', '⚖️ Debate & Opinions')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">⚖️ Debate & Opinions</button>
         <button onclick="selectCategory('Business & Workplace', '📈 Business & Workplace')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">📈 Business & Workplace</button>
         <button onclick="selectCategory('IELTS / TOEFL Exam Prep', '🎓 IELTS / TOEFL Exam Prep')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">🎓 IELTS / TOEFL Exam Prep</button>
         <button onclick="selectCategory('Technology & Artificial Intelligence', '🤖 Tech & AI Advancements')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">🤖 Tech & AI Advancements</button>
-        <button onclick="selectCategory('Travel & Cultural Immersion', '✈️ Travel & Culture')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">✈️ Travel & Culture</button>
-        <button onclick="selectCategory('Philosophy, Ethics & Debate', '⚖️ Philosophy & Debate')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">⚖️ Philosophy & Debate</button>
-        <button onclick="selectCategory('Healthcare, Science & Psychology', '🧠 Science & Psychology')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">🧠 Science & Psychology</button>
+        <button onclick="selectCategory('Hobbies, Media & Fun', '🍿 Hobbies, Movies & Fun')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">🍿 Hobbies, Movies & Fun</button>
+        <button onclick="selectCategory('Health & Daily Routines', '🏃 Health & Daily Habits')" class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-300 hover:bg-white/10 hover:text-white transition">🏃 Health & Daily Habits</button>
       </div>
     </div>
 
-    <!-- The Hero Topic Display -->
-    <div class="space-y-4 max-w-2xl px-3 transition-all duration-300">
+    <!-- The Hero Topic Display Container -->
+    <div id="topicCardContainer" class="space-y-4 max-w-2xl px-3 transform transition-all duration-300">
       <div class="flex items-center justify-center gap-2">
         <span id="topicStatusTag" class="text-[10px] tracking-widest text-indigo-400 uppercase font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20">READY TO SPEAK</span>
         <button onclick="readTopicAloud()" class="text-slate-400 hover:text-indigo-300 text-xs transition p-1" title="Listen to prompt">
@@ -200,11 +201,11 @@
       </div>
       
       <h2 id="topicTitle" class="font-display text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-[1.12]">
-        The Cost of Comfort
+        First Job Interview
       </h2>
       
       <p id="topicDescription" class="text-xs sm:text-sm text-slate-400 font-light leading-relaxed max-w-lg mx-auto">
-        Explain a circumstance where staying in your comfort zone prevented growth, and what taking a risk taught you.
+        How did you feel during your very first job interview, and what did you learn from it?
       </p>
 
       <!-- Vocabulary Chips -->
@@ -273,7 +274,7 @@
       <div class="space-y-3">
         <label class="text-[11px] text-slate-400 uppercase tracking-wider font-semibold block">Enter any keyword, scenario, or theme:</label>
         <div class="flex gap-2">
-          <input type="text" id="customTopicSeedInput" placeholder="e.g., Remote Work Challenges, Quantum Computing, Climate Crisis..." class="flex-1 glass-pill bg-slate-900/90 text-slate-100 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amber-400 border border-white/10">
+          <input type="text" id="customTopicSeedInput" placeholder="e.g., Remote Work Challenges, Favorite Street Food, Exam Stress..." class="flex-1 glass-pill bg-slate-900/90 text-slate-100 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-amber-400 border border-white/10">
           <button onclick="applyDirectCustomTopic()" class="glass-pill bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 px-3.5 py-2 rounded-xl text-xs font-bold transition">Apply</button>
         </div>
         <button onclick="generateBranchingTopics()" id="branchBtn" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-2">
@@ -532,13 +533,18 @@
       authToken: localStorage.getItem('speakwell_token') || null,
       userProfile: { name: "Learner", email: "", phone: "", deadline: "22:00" },
       currentTopic: {
-        title: "The Cost of Comfort",
-        desc: "Explain a circumstance where staying in your comfort zone prevented growth, and what taking a risk taught you.",
-        vocab: ["Stagnation", "Leap of faith", "Catalyst for change"]
+        title: "First Job Interview",
+        desc: "How did you feel during your very first job interview, and what did you learn from it?",
+        vocab: ["break the ice", "nervous butterflies", "make a great impression"]
       },
+      topicBuffer: [],
       recentTopics: [],
       history: []
     };
+
+    const TARGET_BUFFER_SIZE = 3;
+    let isRefillInProgress = false;
+    let isSpinDebouncing = false;
 
     let timerInterval = null;
     let timerRemaining = 60;
@@ -552,7 +558,7 @@
       { name: "Telugu", native: "తెలుగు", flag: "🇮🇳", speechCode: "te-IN" },
       { name: "Hindi", native: "हिन्दी", flag: "🇮🇳", speechCode: "hi-IN" },
       { name: "Tamil", native: "தமிழ்", flag: "🇮🇳", speechCode: "ta-IN" },
-      { name: "Kannada", native: "<ctrl42>కన్నడ", flag: "🇮🇳", speechCode: "kn-IN" },
+      { name: "Kannada", native: "కನ್ನಡ", flag: "🇮🇳", speechCode: "kn-IN" },
       { name: "Malayalam", native: "മലയാളം", flag: "🇮🇳", speechCode: "ml-IN" },
       { name: "Marathi", native: "మరాఠీ", flag: "🇮🇳", speechCode: "mr-IN" },
       { name: "Bengali", native: "বাংলা", flag: "🇮🇳", speechCode: "bn-IN" },
@@ -569,29 +575,153 @@
     ];
 
     // -------------------------------------------------------------
-    // INFINITE COMBINATORIAL ENTROPY GENERATOR MATRIX
+    // 500-ITEM COMBINATORIAL SEED DICTIONARY & 3-AXIS MATRIX ENGINE
     // -------------------------------------------------------------
-    const MATRIX_DOMAINS = [
-      'Macro-economics', 'AI alignment', 'cognitive psychology', 'geopolitical diplomacy',
-      'architectural design', 'bio-ethics', 'quantum theory', 'organizational sociology',
-      'creative art philosophy', 'cybernetics', 'behavioral economics', 'space exploration ethics', 'urban ecology'
+    const COMBINATORIAL_SUBJECTS = {
+      'Job Interview & Career': [
+        { title: 'First Job Interview', detail: 'your very first job interview experience', vocab: ['break the ice', 'nervous butterflies', 'make a great impression'] },
+        { title: 'Dealing with a Difficult Boss', detail: 'working with a manager who has a tough personality', vocab: ['professional boundary', 'conflict resolution', 'diplomatic response'] },
+        { title: 'Answering "Tell Me About Yourself"', detail: 'summarizing your background for a recruiter', vocab: ['elevator pitch', 'key achievements', 'career highlights'] },
+        { title: 'Salary Negotiations', detail: 'discussing your starting pay or asking for a raise', vocab: ['market value', 'compensation package', 'know your worth'] },
+        { title: 'Work From Home vs Office', detail: 'comparing remote work flexibility with office collaboration', vocab: ['work-life balance', 'remote collaboration', 'office culture'] },
+        { title: 'Handling Tight Deadlines', detail: 'completing critical tasks under extreme time pressure', vocab: ['work under pressure', 'meet the deadline', 'prioritize tasks'] },
+        { title: 'Resignation & Notice Period', detail: 'leaving a company gracefully and handing over duties', vocab: ['graceful exit', 'handover process', 'career transition'] },
+        { title: 'Handling Team Conflicts', detail: 'resolving disagreements between team members', vocab: ['find common ground', 'active listening', 'de-escalate tension'] },
+        { title: 'Career Path Pivot', detail: 'switching to a completely new industry or domain', vocab: ['transferable skills', 'leap of faith', 'steep learning curve'] },
+        { title: 'Performance Appraisal Review', detail: 'receiving annual feedback and setting future targets', vocab: ['constructive feedback', 'growth mindset', 'key metrics'] },
+        { title: 'Office Politics & Culture', detail: 'navigating workplace dynamics and unwritten rules', vocab: ['build rapport', 'stay professional', 'company alignment'] },
+        { title: 'Overtime & Burnout Prevention', detail: 'managing long working hours without compromising health', vocab: ['prevent burnout', 'set boundaries', 'workplace wellness'] },
+        { title: 'Onboarding New Teammates', detail: 'welcoming and training a junior colleague on your team', vocab: ['show them the ropes', 'peer mentorship', 'smooth transition'] },
+        { title: 'Elevator Pitch Practice', detail: 'introducing yourself and your project in under 60 seconds', vocab: ['concise pitch', 'hook the listener', 'value proposition'] },
+        { title: 'Layoff Anxiety & Security', detail: 'staying resilient during industry downsizing', vocab: ['future-proof skills', 'stay adaptable', 'financial cushion'] },
+        { title: 'Workplace Diversity & Inclusion', detail: 'working in multicultural and diverse teams', vocab: ['diverse perspectives', 'inclusive environment', 'cultural awareness'] },
+        { title: 'Pushing for a Promotion', detail: 'demonstrating leadership to get to the next level', vocab: ['take initiative', 'track record', 'step up to the plate'] },
+        { title: 'Finding a Career Mentor', detail: 'seeking guidance from senior industry professionals', vocab: ['valuable guidance', 'career roadmap', 'learn from experience'] },
+        { title: 'Networking Events', detail: 'connecting with industry peers at conferences or meetups', vocab: ['expand network', 'make meaningful connections', 'follow up'] },
+        { title: 'Job Hunting Strategies', detail: 'searching for job openings and tailoring your resume', vocab: ['stand out', 'tailored resume', 'target companies'] }
+      ],
+      'Travel & Cultural Immersion': [
+        { title: 'Lost Luggage at Airport', detail: 'discovering your luggage was misplaced during a flight', vocab: ['baggage claim', 'travel mishap', 'file a report'] },
+        { title: 'Solo Traveling vs Group Trips', detail: 'exploring a new country alone versus traveling with friends', vocab: ['wanderlust', 'step out of comfort zone', 'travel companion'] },
+        { title: 'Memorable Scenic Train Trip', detail: 'a train journey with spectacular landscapes and views', vocab: ['scenic route', 'unforgettable views', 'off the beaten path'] },
+        { title: 'Street Food Discovery', detail: 'trying local delicacies from street stalls in another city', vocab: ['local delicacy', 'culinary experience', 'exotic flavors'] },
+        { title: 'Dream Vacation Planning', detail: 'designing your ideal bucket-list international holiday', vocab: ['bucket list destination', 'cultural immersion', 'sightseeing'] },
+        { title: 'Beach Retreat vs Mountain Trek', detail: 'choosing between sunny beaches and snowy mountain peaks', vocab: ['coastal breeze', 'mountain peak', 'serene getaway'] },
+        { title: 'Airport Flight Delays', detail: 'spending hours stranded at an airport during a delay', vocab: ['kill time', 'travel delay', 'stay patient'] },
+        { title: 'Passport & Visa Hassles', detail: 'navigating embassy interviews and visa documentation', vocab: ['paperwork hassle', 'entry permit', 'smooth clearance'] },
+        { title: 'Hostel Social Encounters', detail: 'meeting international travelers in a shared hostel lounge', vocab: ['swap travel stories', 'global community', 'budget travel'] },
+        { title: 'Missed Transit Connection', detail: 'missing a connecting bus or flight in a foreign city', vocab: ['quick thinking', 'alternative route', 'unexpected detour'] },
+        { title: 'Language Barrier Humor', detail: 'communicating using hand gestures when you cannot speak the local language', vocab: ['body language', 'miming', 'break the barrier'] },
+        { title: 'Bargaining at Local Markets', detail: 'negotiating prices for souvenirs with local vendors', vocab: ['haggle for price', 'good deal', 'art of bargaining'] },
+        { title: 'Packing Light Strategy', detail: 'fitting everything into a single carry-on bag for a long trip', vocab: ['travel light', 'essential items', 'minimalist packer'] },
+        { title: 'Beating Jet Lag', detail: 'recovering after flying across multiple time zones', vocab: ['adjust circadian rhythm', 'sleep schedule', 'overcome fatigue'] },
+        { title: 'Unplanned Road Trips', detail: 'taking an spontaneous drive without a fixed destination', vocab: ['open road', 'spontaneous adventure', 'spontaneous stops'] },
+        { title: 'Discovering Hidden Gems', detail: 'finding quiet spots that tourists rarely visit', vocab: ['secret spot', 'authentic experience', 'hidden gem'] },
+        { title: 'Airbnb vs Traditional Hotels', detail: 'comparing staying in local apartments with full-service hotels', vocab: ['homey feel', 'hotel amenities', 'local host'] },
+        { title: 'Cultural Etiquette Lessons', detail: 'learning customs and manners when visiting sacred or traditional sites', vocab: ['show respect', 'local customs', 'cultural sensitivity'] },
+        { title: 'Wilderness Camping', detail: 'spending the night under the stars in a tent in nature', vocab: ['roughing it', 'starry sky', 'connect with nature'] },
+        { title: 'Ocean Cruise Experience', detail: 'sailing across islands on a large cruise ship', vocab: ['island hopping', 'ocean breeze', 'all-inclusive'] }
+      ],
+      'Daily Casual Conversation': [
+        { title: 'Morning Tea vs Coffee', detail: 'starting your day with a hot cup of tea or coffee', vocab: ['daily pick-me-up', 'cozy atmosphere', 'sip on'] },
+        { title: 'Screen Time Management', detail: 'balancing smartphone usage with real-life activities', vocab: ['digital detox', 'screen addiction', 'mindful usage'] },
+        { title: 'Childhood Festival Memories', detail: 'celebrating festive holidays with family as a child', vocab: ['festive atmosphere', 'cherished memories', 'family tradition'] },
+        { title: 'Reconnecting with Old Friends', detail: 'meeting a friend you haven\'t seen in several years', vocab: ['pick up where left off', 'walk down memory lane', 'reconnect'] },
+        { title: 'Cooking Disaster Moments', detail: 'attempting a recipe that turned out completely wrong', vocab: ['kitchen mishap', 'burnt to a crisp', 'learning experience'] },
+        { title: 'Daily Fitness Habits', detail: 'incorporating walks or workouts into a busy schedule', vocab: ['stay active', 'daily routine', 'fit lifestyle'] },
+        { title: 'Late Night Habits vs Early Mornings', detail: 'staying up late studying or working versus waking up at dawn', vocab: ['night owl', 'early bird', 'burn the midnight oil'] },
+        { title: 'Grocery Shopping Routines', detail: 'navigating supermarket aisles and making healthy choices', vocab: ['stock up', 'grocery list', 'fresh produce'] },
+        { title: 'Pet Companionship Joys', detail: 'the fun and responsibilities of caring for a dog or cat', vocab: ['furry friend', 'unconditional love', 'pet care'] },
+        { title: 'Rainy Day Activities', detail: 'spending a rainy weekend indoors with books or movies', vocab: ['patter of rain', 'cozy indoors', 'hot cocoa'] },
+        { title: 'Favorite Podcasts & Shows', detail: 'listening to audio series or watching favorite series', vocab: ['binge-watch', 'audio episode', 'highly recommended'] },
+        { title: 'Weekend Sleep-ins', detail: 'catching up on rest on Sunday morning without alarms', vocab: ['sleep in', 'lazy Sunday', 'recharge batteries'] },
+        { title: 'DIY Home Repairs', detail: 'fixing small things around the house by yourself', vocab: ['handy tools', 'do-it-yourself', 'fix up'] },
+        { title: 'Commuting on Public Transit', detail: 'riding buses, subways, or cabs during daily peak hours', vocab: ['daily commute', 'rush hour', 'grab a seat'] },
+        { title: 'Room & Desk Organization', detail: 'decluttering your living space or work desk', vocab: ['clear clutter', 'tidy up', 'organized space'] },
+        { title: 'Favorite Comfort Food', detail: 'treating yourself to a favorite dessert or warm meal', vocab: ['guilty pleasure', 'comfort food', 'satisfy cravings'] },
+        { title: 'Nostalgic Music Tracks', detail: 'listening to songs that take you back to high school', vocab: ['throwback tune', 'nostalgic vibe', 'soundtrack of youth'] },
+        { title: 'Social Media Scrolling', detail: 'scrolling through social feeds during breaks', vocab: ['infinite scroll', 'stay updated', 'pass the time'] },
+        { title: 'Neighborhood Cafe Vibes', detail: 'sitting at a local cafe reading or working', vocab: ['cozy corner', 'coffee shop vibe', 'people watching'] },
+        { title: 'Handling Bad Hair Days', detail: 'dealing with little unexpected morning inconveniences', vocab: ['rough morning', 'laugh it off', 'shake it off'] }
+      ],
+      'Debate & Opinions': [
+        { title: 'Social Media Friendship Impact', detail: 'whether social media strengthens or weakens real friendships', vocab: ['double-edged sword', 'virtual connections', 'superficial engagement'] },
+        { title: 'Can Money Buy Happiness?', detail: 'the extent to which financial wealth creates genuine happiness', vocab: ['financial stability', 'material wealth', 'quality of life'] },
+        { title: 'Online vs Traditional University', detail: 'evaluating remote e-learning against physical campus lectures', vocab: ['hands-on learning', 'flexible schedule', 'campus environment'] },
+        { title: 'AI & Human Creativity', detail: 'whether artificial intelligence enriches or threatens human art', vocab: ['human touch', 'automation', 'creative expression'] },
+        { title: 'Four-Day Work Week Trial', detail: 'reducing weekly work days from five to four while keeping full pay', vocab: ['workplace productivity', 'three-day weekend', 'work efficiency'] },
+        { title: 'Cashless Society Debate', detail: 'replacing physical currency completely with digital payments', vocab: ['digital currency', 'financial privacy', 'seamless transactions'] },
+        { title: 'Permanent Remote Work', detail: 'whether companies should allow employees to work from anywhere forever', vocab: ['location independence', 'geographical flexibility', 'company cohesion'] },
+        { title: 'Electric vs Gasoline Cars', detail: 'transitioning vehicles to battery electric power', vocab: ['zero emissions', 'charging infrastructure', 'carbon footprint'] },
+        { title: 'Standardized Exams Validity', detail: 'whether exam test scores accurately measure real human intelligence', vocab: ['holistic assessment', 'test anxiety', 'measure of capability'] },
+        { title: 'Urban vs Rural Living', detail: 'choosing fast-paced city life versus quiet countryside living', vocab: ['hustle and bustle', 'serene lifestyle', 'access to amenities'] },
+        { title: 'Fast Fashion Environmental Impact', detail: 'buying cheap trendy clothes versus sustainable long-lasting fashion', vocab: ['sustainable choices', 'throwaway culture', 'eco-friendly'] },
+        { title: 'Video Games Benefits', detail: 'whether gaming improves problem-solving or leads to screen addiction', vocab: ['cognitive skills', 'hand-eye coordination', 'moderate play'] },
+        { title: 'Single-Use Plastic Bans', detail: 'outlawing disposable plastic straws, bags, and packaging', vocab: ['environmental tax', 'reusable alternatives', 'waste reduction'] },
+        { title: 'Workaholism & Success', detail: 'whether working 70 hours a week is required for great career success', vocab: ['hustle culture', 'burnout risk', 'sustainable pace'] },
+        { title: 'Social Media Influencer Culture', detail: 'the influence of online creators on teenage purchasing habits', vocab: ['role model', 'sponsored content', 'critical thinking'] },
+        { title: 'Digital Privacy vs National Security', detail: 'balancing citizen encryption rights with government security monitoring', vocab: ['data protection', 'surveillance', 'fundamental rights'] },
+        { title: 'Space Exploration Funding', detail: 'spending billions exploring Mars versus fixing problems on Earth', vocab: ['scientific discovery', 'resource allocation', 'future exploration'] },
+        { title: 'AI Ethics & Regulation', detail: 'enforcing strict laws on artificial intelligence developers', vocab: ['ethical guardrails', 'responsible tech', 'algorithmic bias'] },
+        { title: 'Animal Testing Laws', detail: 'banning animal testing for cosmetics and medical products', vocab: ['humane alternatives', 'ethical treatment', 'scientific testing'] },
+        { title: 'Universal Basic Income', detail: 'providing a guaranteed monthly income to every citizen', vocab: ['safety net', 'poverty alleviation', 'economic stimulus'] }
+      ]
+    };
+
+    const COMBINATORIAL_SITUATIONS = [
+      { label: 'Explaining to a Friend', prefix: 'Imagine you are explaining this to a close friend over coffee.' },
+      { label: 'Recruiter Interview Question', prefix: 'Imagine answering an unexpected question from a job recruiter.' },
+      { label: 'Giving Advice to a Junior', prefix: 'Imagine mentoring someone who is dealing with this situation for the first time.' },
+      { label: 'Reflecting in Audio Journal', prefix: 'Imagine recording your private thoughts in an audio journal at night.' },
+      { label: 'Debating at a Dinner Party', prefix: 'Imagine sharing your perspective during a lively conversation with friends.' },
+      { label: 'Recommending to a Colleague', prefix: 'Imagine recommending your approach to a workplace team member.' },
+      { label: 'Sharing a Past Memory', prefix: 'Imagine telling a story from your past during a relaxed family gathering.' },
+      { label: 'Explaining Choices to Family', prefix: 'Imagine explaining your personal decisions to your parents or partner.' },
+      { label: 'Writing a Public Review', prefix: 'Imagine voicing your honest review to help other people make up their mind.' },
+      { label: 'Stepping Out of Comfort Zone', prefix: 'Imagine encouraging someone to take a brave step forward.' },
+      { label: 'Long Road Trip Chat', prefix: 'Imagine discussing this topic while on a 5-hour scenic drive.' },
+      { label: 'Podcast Guest Appearance', prefix: 'Imagine being interviewed as a guest speaker on an informative podcast episode.' }
     ];
 
-    const MATRIX_TENSIONS = [
-      'Unintended Side-Effects', 'Resource Scarcity', 'Irreversible Commitment', 'Moral Hazard',
-      'Conflicting Incentives', 'Transparency vs Secrecy', 'Empathy vs Efficiency',
-      'Short-Term Gain vs Long-Term Survival', 'Autonomy vs Regulation'
+    const COMBINATORIAL_ANGLES = [
+      { label: 'Expectation vs Reality', question: 'What was your expectation compared to how things actually turned out?' },
+      { label: 'Biggest Lesson Learned', question: 'What single key lesson did you walk away with after this experience?' },
+      { label: 'Pros vs Unexpected Cons', question: 'What are the biggest advantages and unexpected disadvantages you noticed?' },
+      { label: 'Beginner Mistake to Avoid', question: 'What is one common mistake beginners make, and how can it be avoided?' },
+      { label: 'Ideal Best-Case Scenario', question: 'What would the absolute perfect outcome look like in this situation?' },
+      { label: 'Sudden Turning Point', question: 'Was there a specific moment or decision that completely changed the outcome?' },
+      { label: 'Perspective Shift Over Time', question: 'How has your personal opinion on this topic evolved over the past few years?' },
+      { label: '3 Practical Tips for Success', question: 'What 3 concrete tips would you give to anyone handling this right now?' },
+      { label: 'Emotional & Psychological Impact', question: 'How does this situation impact a person\'s confidence and peace of mind?' },
+      { label: 'Efficiency vs Enjoyment Balance', question: 'How do you strike the right balance between getting results and enjoying the process?' },
+      { label: 'Predicting 5-Year Future Trends', question: 'Where do you see this topic evolving over the next five years?' },
+      { label: 'Finding the Compromise Solution', question: 'What is the best middle-ground solution when opinions are strongly divided?' }
     ];
 
-    const MATRIX_PERSONAS = [
-      'Skeptical Investor', 'Crisis Manager', 'Contrarian Philosopher', 'Whistleblower',
-      'Lead Architect', 'Ethicist', 'Venture Strategist', 'Investigative Analyst', 'Futurist Leader'
-    ];
+    function getSeenTopics() {
+      try {
+        const stored = localStorage.getItem('speakwell_seen_topics');
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        return [];
+      }
+    }
 
-    const MATRIX_SCENARIOS = [
-      'High-Stakes Boardroom Vote', 'Public Debate', 'Personal Career Crossroad',
-      'Retrospective Analysis', 'Future Crisis Briefing', 'Executive Summit', 'Policy Keynote'
-    ];
+    function initSeenSet() {
+      if (!window.seenSet) {
+        window.seenSet = new Set(getSeenTopics());
+      }
+    }
+
+    function addSeenTopic(title) {
+      if (!title) return;
+      initSeenSet();
+      window.seenSet.add(title);
+      try {
+        const list = Array.from(window.seenSet).slice(-300);
+        localStorage.setItem('speakwell_seen_topics', JSON.stringify(list));
+      } catch (e) {}
+    }
 
     function getRandomSalt() {
       const arr = new Uint8Array(8);
@@ -600,24 +730,48 @@
       return `${Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('')}-${perf}-${Date.now()}`;
     }
 
-    function generateDynamicFallbackTopic() {
-      const randomDomain = MATRIX_DOMAINS[Math.floor(Math.random() * MATRIX_DOMAINS.length)];
-      const randomTension = MATRIX_TENSIONS[Math.floor(Math.random() * MATRIX_TENSIONS.length)];
-      const randomPersona = MATRIX_PERSONAS[Math.floor(Math.random() * MATRIX_PERSONAS.length)];
-      const randomScenario = MATRIX_SCENARIOS[Math.floor(Math.random() * MATRIX_SCENARIOS.length)];
+    function generateUniqueProceduralTopic() {
+      initSeenSet();
+      const currentTitle = appState.currentTopic?.title || '';
+      const purpose = appState.practicePurpose || 'Job Interview & Career';
+
+      const key = Object.keys(COMBINATORIAL_SUBJECTS).find(k => 
+        purpose.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(purpose.toLowerCase())
+      ) || 'Job Interview & Career';
+
+      const pool = COMBINATORIAL_SUBJECTS[key] || COMBINATORIAL_SUBJECTS['Job Interview & Career'];
+      const available = pool.filter(s => !window.seenSet.has(s.title) && s.title !== currentTitle);
+      
+      let selectedSubject;
+      if (available.length > 0) {
+        selectedSubject = available[Math.floor(Math.random() * available.length)];
+      } else {
+        const rawChoice = pool[Math.floor(Math.random() * pool.length)];
+        const uniqueSeed = Date.now().toString().slice(-4);
+        selectedSubject = {
+          title: `${rawChoice.title} #${uniqueSeed}`,
+          detail: rawChoice.detail,
+          vocab: rawChoice.vocab
+        };
+      }
+
+      const sit = COMBINATORIAL_SITUATIONS[Math.floor(Math.random() * COMBINATORIAL_SITUATIONS.length)];
+      const ang = COMBINATORIAL_ANGLES[Math.floor(Math.random() * COMBINATORIAL_ANGLES.length)];
 
       return {
-        title: `${randomPersona}'s ${randomTension}`,
-        desc: `In the context of ${randomDomain}, how would you resolve the tension between ${randomTension.toLowerCase()} during a critical ${randomScenario.toLowerCase()} in ${appState.targetLang}?`,
-        vocab: [randomTension, randomDomain, `${randomPersona} Perspective`]
+        title: selectedSubject.title,
+        desc: `${sit.prefix} Describe ${selectedSubject.detail}. ${ang.question} Speak naturally in ${appState.targetLang}.`,
+        vocab: selectedSubject.vocab
       };
     }
 
     window.addEventListener('DOMContentLoaded', () => {
       loadState();
+      initSeenSet();
       initSpeechRecognition();
       renderLanguagePickerGrid();
       updateUI();
+      refillTopicBuffer();
     });
 
     function loadState() {
@@ -625,12 +779,15 @@
         const saved = localStorage.getItem('speakwell_state_v2') || localStorage.getItem('speakwell_modern_state');
         if (saved) appState = { ...appState, ...JSON.parse(saved) };
       } catch (e) {}
+      if (!appState.topicBuffer) appState.topicBuffer = [];
       timerRemaining = appState.targetSeconds || 60;
     }
 
     function saveState() {
       try {
-        localStorage.setItem('speakwell_state_v2', JSON.stringify(appState));
+        const toSave = { ...appState };
+        delete toSave.topicBuffer;
+        localStorage.setItem('speakwell_state_v2', JSON.stringify(toSave));
       } catch (e) {}
     }
 
@@ -692,83 +849,177 @@
     }
 
     function handleSpinTopicClick() {
+      if (isSpinDebouncing) return;
+      isSpinDebouncing = true;
       playCoinSound();
+
+      const spinIcon = document.getElementById('spinIcon');
+      if (spinIcon) spinIcon.classList.add('fa-spin');
+
       generateNewTopic();
+
+      setTimeout(() => {
+        isSpinDebouncing = false;
+        if (spinIcon) spinIcon.classList.remove('fa-spin');
+      }, 400);
     }
 
-    // Secure Backend Proxy Call
-    async function fetchGeminiApi(model, payload, maxRetries = 3) {
-      const delays = [1000, 2000, 4000];
+    // Secure Backend Proxy Call with Purpose Parameter
+    async function fetchGeminiApi(model = 'gemini-1.5-flash', payload, maxRetries = 1) {
+      const delays = [1000];
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
           const res = await fetch('/api/gemini', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ model, payload })
+            body: JSON.stringify({
+              model,
+              purpose: appState.practicePurpose || 'Job Interview & Career',
+              payload
+            })
           });
+
+          const data = await res.json();
 
           if (!res.ok) {
             if ((res.status === 429 || res.status >= 500) && attempt < maxRetries) {
-              await new Promise(r => setTimeout(r, delays[attempt] || 2000));
+              await new Promise(r => setTimeout(r, delays[attempt] || 1000));
               continue;
             }
-            throw new Error(`HTTP Error ${res.status}`);
+            throw new Error(data.error?.message || data.error || `HTTP Error ${res.status}`);
           }
-          return await res.json();
+          return data;
         } catch (e) {
           if (attempt === maxRetries) throw e;
-          await new Promise(r => setTimeout(r, delays[attempt] || 2000));
+          await new Promise(r => setTimeout(r, delays[attempt] || 1000));
         }
       }
     }
 
-    async function generateNewTopic() {
-      const icon = document.getElementById('spinIcon');
-      icon.classList.add('fa-spin');
-      document.getElementById('topicStatusTag').innerText = "GENERATING...";
-
-      const randomDomain = MATRIX_DOMAINS[Math.floor(Math.random() * MATRIX_DOMAINS.length)];
-      const randomTension = MATRIX_TENSIONS[Math.floor(Math.random() * MATRIX_TENSIONS.length)];
-      const randomPersona = MATRIX_PERSONAS[Math.floor(Math.random() * MATRIX_PERSONAS.length)];
-      const randomScenario = MATRIX_SCENARIOS[Math.floor(Math.random() * MATRIX_SCENARIOS.length)];
-      const salt = getRandomSalt();
-      const blacklist = appState.recentTopics || [];
-
-      const prompt = `Generate an entirely NEW, original, and deeply thought-provoking speaking prompt for the sector '${appState.practicePurpose}' in '${appState.targetLang}'.
-Focus Area Matrix: Domain [${randomDomain}], Tension [${randomTension}], Perspective [${randomPersona}], Setting [${randomScenario}].
-Unique Salt: ${salt}.
-Blacklist to avoid:${JSON.stringify(blacklist.slice(-100))}.
-Return strictly JSON: { "title": "...", "desc": "...", "vocab": ["...", "...", "..."] }`;
+    // -------------------------------------------------------------
+    // SILENT BACKGROUND PRE-FETCHING QUEUE WITH HIGH-ENTROPY SEEDS
+    // -------------------------------------------------------------
+    async function refillTopicBuffer() {
+      if (isRefillInProgress) return;
+      isRefillInProgress = true;
+      initSeenSet();
 
       try {
-        const res = await fetchGeminiApi('gemini-3-flash-preview', {
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: "application/json", temperature: 1.0, topP: 0.98 }
-        });
+        while (appState.topicBuffer.length < TARGET_BUFFER_SIZE) {
+          const salt = getRandomSalt();
+          const bufferedTitles = appState.topicBuffer.map(t => t.title);
+          const combinedExclusions = [...Array.from(window.seenSet), ...bufferedTitles];
+          const currentSector = appState.practicePurpose || 'Job Interview & Career';
 
-        let data = null;
-        try {
-          data = JSON.parse(res?.candidates?.[0]?.content?.parts?.[0]?.text);
-        } catch(e) {}
+          const key = Object.keys(COMBINATORIAL_SUBJECTS).find(k => 
+            currentSector.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(currentSector.toLowerCase())
+          ) || 'Job Interview & Career';
 
-        if (data && data.title) {
-          appState.currentTopic = data;
-          appState.recentTopics = [...(appState.recentTopics || []), data.title].slice(-100);
-          saveState();
-          updateUI();
-          showToast("New unique topic generated!", "✨");
-        } else {
-          appState.currentTopic = generateDynamicFallbackTopic();
-          updateUI();
+          const subjects = COMBINATORIAL_SUBJECTS[key] || COMBINATORIAL_SUBJECTS['Job Interview & Career'];
+          const s = subjects[Math.floor(Math.random() * subjects.length)];
+          const sit = COMBINATORIAL_SITUATIONS[Math.floor(Math.random() * COMBINATORIAL_SITUATIONS.length)];
+          const ang = COMBINATORIAL_ANGLES[Math.floor(Math.random() * COMBINATORIAL_ANGLES.length)];
+
+          const prompt = `You are an expert language learning coach.
+Generate a TRULY UNIQUE, completely relatable, easy speaking topic strictly about the category: "${currentSector}" in '${appState.targetLang}'.
+
+COMBINATORIAL CONTEXT SEEDS:
+- Subject Theme: "${s.title}" (${s.detail})
+- Real-life Situation: "${sit.label}" (${sit.prefix})
+- Analytical Angle: "${ang.label}" (${ang.question})
+- Target Language: "${appState.targetLang}"
+
+STRICT REQUIREMENTS:
+1. Category Focus: Prompt MUST be 100% relevant to "${currentSector}".
+2. NO complex academic, economic, philosophical, or cybernetic jargon.
+3. Title must be 2 to 4 simple, punchy, everyday words (e.g., "First Job Interview", "Lost Luggage", "Morning Coffee").
+4. Description must be 1-2 practical, easy questions that any learner can answer right away.
+5. Vocab must contain 3 useful, practical collocations or idioms suitable for intermediate speaking.
+6. Unique Entropy Salt: ${salt}.
+7. Blacklist of previously generated topics to STRICTLY AVOID: ${JSON.stringify(combinedExclusions.slice(-150))}.
+
+Return strictly JSON: { "title": "...", "desc": "...", "vocab": ["...", "...", "..."] }`;
+
+          const fetchPromise = fetchGeminiApi('gemini-1.5-flash', {
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              responseMimeType: "application/json",
+              temperature: 1.0,
+              topP: 0.98,
+              topK: 40
+            }
+          });
+
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Fetch timeout 2.5s')), 2500)
+          );
+
+          try {
+            const res = await Promise.race([fetchPromise, timeoutPromise]);
+            let data = null;
+            try {
+              data = JSON.parse(res?.candidates?.[0]?.content?.parts?.[0]?.text);
+            } catch(e) {}
+
+            if (data && data.title && !window.seenSet.has(data.title) && data.title !== appState.currentTopic?.title) {
+              appState.topicBuffer.push(data);
+            } else {
+              appState.topicBuffer.push(generateUniqueProceduralTopic());
+            }
+          } catch (e) {
+            appState.topicBuffer.push(generateUniqueProceduralTopic());
+          }
         }
-      } catch (e) {
-        appState.currentTopic = generateDynamicFallbackTopic();
-        updateUI();
       } finally {
-        icon.classList.remove('fa-spin');
-        document.getElementById('topicStatusTag').innerText = "READY TO SPEAK";
+        isRefillInProgress = false;
       }
+    }
+
+    // -------------------------------------------------------------
+    // ZERO-LATENCY TOPIC SWITCHER & ANTI-DUPLICATE GUARD
+    // -------------------------------------------------------------
+    function generateNewTopic() {
+      initSeenSet();
+      const currentTitle = appState.currentTopic?.title || '';
+
+      let nextTopic = null;
+      while (appState.topicBuffer && appState.topicBuffer.length > 0) {
+        const candidate = appState.topicBuffer.shift();
+        if (candidate && candidate.title && candidate.title !== currentTitle && !window.seenSet.has(candidate.title)) {
+          nextTopic = candidate;
+          break;
+        }
+      }
+
+      if (!nextTopic) {
+        nextTopic = generateUniqueProceduralTopic();
+      }
+
+      appState.currentTopic = nextTopic;
+      addSeenTopic(nextTopic.title);
+      saveState();
+
+      // 350ms Slot Machine Micro-Animation & Forced DOM Update
+      const card = document.getElementById('topicCardContainer');
+      if (card) {
+        card.style.transition = 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1), opacity 150ms ease-out, filter 150ms ease-out';
+        card.style.transform = 'translateY(-6px) scale(0.98)';
+        card.style.opacity = '0.35';
+        card.style.filter = 'blur(4px)';
+
+        setTimeout(() => {
+          updateUI();
+          card.style.transform = 'translateY(0px) scale(1.0)';
+          card.style.opacity = '1.0';
+          card.style.filter = 'blur(0px)';
+        }, 150);
+      } else {
+        updateUI();
+      }
+
+      // Silently refill topic buffer in background
+      setTimeout(refillTopicBuffer, 50);
     }
 
     function openCustomTopicModal() {
@@ -786,9 +1037,10 @@ Return strictly JSON: { "title": "...", "desc": "...", "vocab": ["...", "...", "
       if (!val) return;
       appState.currentTopic = {
         title: val,
-        desc: `Articulate your perspectives systematically regarding ${val} in ${appState.targetLang}.`,
-        vocab: ["In my perspective", "Key takeaway", "Specifically"]
+        desc: `Share your personal thoughts and experiences about ${val} in ${appState.targetLang}.`,
+        vocab: ["in my experience", "key takeaway", "for instance"]
       };
+      addSeenTopic(val);
       saveState();
       updateUI();
       closeCustomTopicModal();
@@ -801,22 +1053,22 @@ Return strictly JSON: { "title": "...", "desc": "...", "vocab": ["...", "...", "
       const container = document.getElementById('branchingTopicsContainer');
       
       branchBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> Generating Branching Topics...';
-      container.innerHTML = '<div class="text-center py-6 text-xs text-amber-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Crafting 4 distinct angles...</div>';
+      container.innerHTML = '<div class="text-center py-6 text-xs text-amber-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Crafting 4 distinct practical angles...</div>';
 
-      const prompt = `Based on the theme "${seed}", generate 4 distinct, engaging speaking sub-topics in ${appState.targetLang}.
+      const prompt = `Based on the theme "${seed}", generate 4 distinct, easy-to-answer speaking sub-topics for language learners in ${appState.targetLang}. No heavy jargon.
 Return strictly JSON:
 {
   "topics": [
     {
-      "title": "Angle Title",
-      "desc": "1-2 sentence guiding prompt",
-      "vocab": ["word1", "word2", "word3"]
+      "title": "Short Angle Title",
+      "desc": "1-2 practical guiding questions",
+      "vocab": ["collocation1", "collocation2", "collocation3"]
     }
   ]
 }`;
 
       try {
-        const res = await fetchGeminiApi('gemini-3-flash-preview', {
+        const res = await fetchGeminiApi('gemini-1.5-flash', {
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: { responseMimeType: "application/json" }
         });
@@ -844,6 +1096,7 @@ Return strictly JSON:
     function selectBranchTopic(index) {
       if (window._lastBranchTopics && window._lastBranchTopics[index]) {
         appState.currentTopic = window._lastBranchTopics[index];
+        addSeenTopic(appState.currentTopic.title);
         saveState();
         updateUI();
         closeCustomTopicModal();
@@ -1094,7 +1347,7 @@ Return strictly valid JSON:
 }`;
 
       try {
-        const res = await fetchGeminiApi('gemini-3-flash-preview', {
+        const res = await fetchGeminiApi('gemini-1.5-flash', {
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: { responseMimeType: "application/json", temperature: 0.7 }
         });
@@ -1239,7 +1492,7 @@ Return strictly JSON:
 }`;
 
       try {
-        const res = await fetchGeminiApi('gemini-3-flash-preview', {
+        const res = await fetchGeminiApi('gemini-1.5-flash', {
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: { responseMimeType: "application/json" }
         });
@@ -1274,7 +1527,9 @@ Return strictly JSON:
         helper.innerText = "Structured speaking flow. Organize key points methodically.";
       }
       saveState();
+      appState.topicBuffer = [];
       generateNewTopic();
+      refillTopicBuffer();
     }
 
     function toggleCategoryMenu() {
@@ -1287,7 +1542,9 @@ Return strictly JSON:
       toggleCategoryMenu();
       saveState();
       playCoinSound();
+      appState.topicBuffer = [];
       generateNewTopic();
+      refillTopicBuffer();
     }
 
     function openLanguagePickerModal() {
@@ -1337,7 +1594,9 @@ Return strictly JSON:
       updateUI();
       closeLanguagePickerModal();
       playCoinSound();
+      appState.topicBuffer = [];
       generateNewTopic();
+      refillTopicBuffer();
       showToast(`Language switched to ${langName}!`, getFlag(langName));
     }
 
